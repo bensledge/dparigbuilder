@@ -49,32 +49,42 @@ def place_joint(position,name='joint',parent=None):
 
 class Ctrl(object):
     CIRCLE  = 'circle'
+
+    RED = 13
+    BLUE = 6
+    GREEN = 14
+    YELLOW = 17
     
     # shapes
-    def circle(name, radius, normal):
-        return pm.circle(object=True,
+    def circle(name, radius, normal, color):
+        circ =  pm.circle(object=True,
                 name    = name,
                 normal  = normal,
-                radius  = radius)[0]
+                radius  = radius,
+                constructionHistory = False)[0]
+        circ.getShape().overrideEnabled.set(True)
+        circ.getShape().overrideColor.set(color)
+        return circ
     
     build_shape = {
         CIRCLE: circle,
     }
     def __init__(self,xform, name="ctrl", shape=CIRCLE, radius=1.0,
-            normal=[1,0,0], group=True):
+            normal=[1,0,0], group=True, color = 0):
         self.name   = name
         self.shape  = shape
         self.radius = radius
         self.normal = normal
         self.xform  = xform
         self.group  = group
+        self.color  = color
 
         self.ctrl   = None
 
         self.build()
 
     def build(self):
-        self.ctrl = Ctrl.build_shape[self.shape](self.name, self.radius, self.normal)
+        self.ctrl = Ctrl.build_shape[self.shape](self.name, self.radius, self.normal, self.color)
         
         pos_obj = self.ctrl
         if self.group:
@@ -209,11 +219,13 @@ class WireCurve(object):
         raise NotImplemented
 
 class InlineOffset(object):
-    def __init__(self,joints,radius=1.0):
+    def __init__(self,joints,radius=1.0,color=0):
         if type(joints) != list:
             joints  = [joints]
-
         self.joints = joints
+        self.radius = radius
+        self.color  = color
+
         self.ctrls  = []
 
         self.build()
@@ -225,8 +237,9 @@ class InlineOffset(object):
             ctrl   = Ctrl(xform = joint,
                     name    = joint.name() + '_ctrl',
                     shape   = Ctrl.CIRCLE,
-                    radius  = 1.0,
+                    radius  = self.radius,
                     normal  = [0,1,0],
+                    color   = self.color,
                     group   = False).ctrl
             ctrl.setParent(parent)
             pm.makeIdentity(ctrl, apply=True)
@@ -234,13 +247,15 @@ class InlineOffset(object):
             self.ctrls.append(ctrl)
 
 class LinearSkin(object):
-    def __init__(self, mesh, start_loc, end_loc, num_ctrls=3, name="ls"):
+    def __init__(self, mesh, start_loc, end_loc, num_ctrls=3, name="ls",
+            color=0):
         #super(LinearSkin,self).__init__()
         self.mesh_in    = mesh
         self.start_loc  = start_loc
         self.end_loc    = end_loc
         self.num_ctrls  = num_ctrls
         self.name       = name
+        self.color      = color
 
         self.controls   = []
         self.drivers    = []
@@ -278,6 +293,6 @@ class LinearSkin(object):
                 maximumInfluences   = 2)
         print self.skin, type(self.skin)
 
-        InlineOffset(self.drivers)
+        InlineOffset(self.drivers, radius=2, color=self.color)
 
         
