@@ -3,8 +3,8 @@ import json
 import pymel.core as pm
 import defines
 
-import soloBlock as sb
-reload(sb)
+#import soloBlock as sb
+#reload(sb)
 
 # joint orientation
 PRIMARY_AXIS    = 'xzy'
@@ -139,10 +139,6 @@ def repostfix_hierarchy(nodes=None, newpost=None, oldpost=None,
 
     return renamed
 
-def postfix_ui():
-    pass
-
-
 ##  matches one object's position and rotation to another(s)
 #   @param guide ('None') node to match, if None queries selection
 #   @param nodes ('None') nodes to move, if None queries selection
@@ -233,7 +229,7 @@ def connect_attr(outnode, innode, attr):
     for a in attr:
         pm.connectAttr("%s.%s" % (outnode,a),
                        "%s.%s" % (innode, a))
-
+"""
 ##  create solo blocks from a list
 #   @param joints   ('None') list of joints to create blocks for
 #   @return         list of blocks created
@@ -260,8 +256,9 @@ def make_solo_blocks(joints=None,radius=1.0,ctrl_normal=[0,1,0],mtype='transform
         blocks.append(block)
 
     return blocks
-
+"""
 def get_nurbs_shapes(nodes=None,mtype='transform'):
+    '''Returns the nurbs shapes of a transform node'''
     if nodes == None:
         nodes = get_selected(mtype)
 
@@ -281,3 +278,9 @@ def get_nurbs_shapes(nodes=None,mtype='transform'):
             shapes.append(shape)
 
     return shapes
+
+def distance(xforma, xformb):
+    '''Calculates the distance between two transform nodes'''
+    ax, ay, az = xforma.getTranslation(space='world')
+    bx, by, bz = xformb.getTranslation(space='world')
+    return ((ax-bx)**2 + (ay-by)**2 + (az-bz)**2)**0.5
