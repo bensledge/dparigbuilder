@@ -1,7 +1,7 @@
 import pymel.core as pm
 
 import blocks
-from blocks import RibbonIk, LinearSkin, Ctrl
+from blocks import RibbonIk, LinearSkin, Ctrl, ManDynHair, IkSpline
 import skin
 import utils 
 reload(utils)
@@ -110,7 +110,48 @@ def build():
         ctrl_grp.setParent(all_ctrl)
 
 
+    hair_sys = None
+    for dict_ in outerTentacle_locs:
+        # get the names
+        mesh = dict_.keys()[0]
+        attrs = dict_.values()[0]
 
+        name = mesh.split('_')
+        name = name[0] + name[-1]
+
+        # build the rig
+        spline = IkSpline(
+                start_loc = attrs['start_loc'],
+                end_loc = attrs['end_loc'],
+                name = name + '_spline',
+                num_spans = 10,
+                num_joints = 10)
+        joints = [x.name() for x in spline.joints]
+
+        mdhair = ManDynHair(
+                curve = spline.ik_crv,
+                start_loc = spline.start_loc,
+                end_loc = spline.end_loc,
+                num_ctrls = 5,
+                name = name,
+                color = attrs['color'],
+                hair_system = hair_sys)
+        hair_sys = mdhair.hair_system
+
+        ctrls.append(mdhair.controls)
+
+        # update the skinning dict
+        mesh = NAMESPACE + mesh
+        skin_dict[NAMESPACE][skin.SMOOTH].update(
+                {mesh:joints})
+
+        # group everything together
+        ctrl_grp = pm.group(
+                spline.joints[0],spline.ik_crv, spline.ik_handle,
+                mdhair.man_crv, mdhair.dyn_out_crv, mdhair.controls[0],
+                mdhair.follicle,
+                name = '%s_ctrlGrp' % name)
+        ctrl_grp.setParent(all_ctrl)
 
     ## SKIN
     print skin_dict

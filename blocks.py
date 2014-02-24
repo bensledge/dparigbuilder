@@ -319,7 +319,7 @@ class LinearSkin(object):
 
 class IkSpline(object):
     def __init__(self, start_loc, end_loc, num_spans, num_joints,
-                 name='ikSpline',bs_node = None):
+                 name='ikSpline'):
         object.__init__(self)
         self.start_loc = start_loc
         self.end_loc = end_loc
