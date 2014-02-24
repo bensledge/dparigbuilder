@@ -17,6 +17,7 @@ DRVR = 'drvr%s' % (JOINT.title())
 CTRL = 'ctrl'
 BLENDSHAPE = 'bs'
 HAIR_SYS = 'hsys'
+PMA = 'pma'     # plus minus average
 
 # utils
 
@@ -346,6 +347,7 @@ class IkSpline(object):
                 endEffector = self.joints[-1],
                 name = self.name + '_ikHandle',
                 solver = 'ikSplineSolver')
+        self.ik_handle.inheritsTranform = False
 
         self.ik_crv.rename(self.name + '_crv')
 
@@ -358,9 +360,9 @@ class IkSpline(object):
 class ManDynHair(object):
     def __init__(self, curve, start_loc, end_loc, num_ctrls=3,
                  name='manDynHair', color=0, hair_system=None):
-        self.curve_in = curve
-        self.start_loc = start_loc
-        self.end_loc = end_loc
+        self.curve_in = pm.PyNode(curve)
+        self.start_loc = pm.PyNode(start_loc)
+        self.end_loc = pm.PyNode(end_loc)
         self.num_ctrls = num_ctrls
         self.name = name
         self.color = color
@@ -378,8 +380,12 @@ class ManDynHair(object):
         self.build()
 
     def build(self):
-        self.man_crv = pm.duplicate(self.curve_in, 
+        self.curve_in.setAttr('inheritsTransform',False)
+        print self.curve_in,type(self.curve_in)
+        # create a crv and ctrls to act as a manual driver for the sys
+        self.man_crv = pm.duplicate(self.curve_in,returnRootsOnly=True, 
                                     name = '%s_man_%s' % (self.name,CURVE))
+        self.man_crv[0].inheritsTransform = False
 
         linear_skin = LinearSkin(
                 mesh = self.man_crv, 
@@ -392,26 +398,65 @@ class ManDynHair(object):
         self.driver_joints = linear_skin.drivers
         self.controls = linear_skin.controls
 
-        self.dyn_in_crv = pm.duplicate(self.man_crv,
+        self.dyn_in_crv = pm.duplicate(self.man_crv,returnRootsOnly=1,
                                        name = '%s_dynIn_%s' % (self.name,
-                                                               CURVE))
+                                                               CURVE))[0]
+        # drive the dynmanic input curve with the manual curve
         self.shape_bs = pm.blendShape(self.man_crv, self.dyn_in_crv,
                                       name = '%s_shape_%s' % (self.name,
                                                               BLENDSHAPE))
         pm.blendShape(self.shape_bs, edit=True, weight=[(0,1)])
         
-        if self.hair_system == None:
-            hair_system_shape = pm.PyNode(pm.nodetypes.HairSystem())
-            self.hair_system = hair_system_shape.getParent()
-            pm.rename(self.hair_system, '%s_%s' % (self.name, HAIR_SYS))
+        # make a dynamic curve that is driven by a hairSystem
+        self.dyn_out_crv = pm.duplicate(
+                self.dyn_in_crv, returnRootsOnly=1,
+                name = '%s_dynOut_%s' % (self.name, CURVE))[0]
+        self.dyn_out_crv.inheritsTransform = False
+        self.follicle = pm.createNode('follicle', skipSelect=1, 
+                                      name = '%s_%sShape' % (
+                                          self.name,FOLLICLE))
+        self.follicle = pm.rename(self.follicle.getParent(),
+                                  '%s_%s' % (self.name,FOLLICLE))
+        self.follicle.restPose.set(1)
+        
+        if self.hair_system == None or not pm.objExist(self.hair_system):
+            self.hair_system = pm.createNode(
+                    'hairSystem', skipSelect=1,
+                    name='%s_%sShape' % (self.name,HAIR_SYS))
+            self.hair_system = pm.rename(self.hair_system.getParent(),
+                                         '%s_%s' % (self.name,HAIR_SYS))
+            pm.PyNode('time1').outTime >> \
+                    self.hair_system.getShape().currentTime
 
-        self.follicle = pm.createNode('follicle', name = '%s_%sShape' % (
-                                       self.name, FOLLICLE))
-        self.follicle.getParent().rename('%s_%s' % (self.name, FOLLICLE))
+        hair_system = pm.PyNode(self.hair_system)
+        hair_index=len(hair_system.getShape().inputHair.listConnections())
 
-        pm.setAttr('%s.outputHair[0]' % self.hair_system.getShape().name(),
-                   '%s.currentPosition' % self.follicle.name())
+        pm.parent(self.dyn_in_crv, self.follicle)
+        self.dyn_in_crv.getShape().worldSpace[0] >> \
+                self.follicle.getShape().startPosition
+        self.follicle.getShape().outCurve >> \
+                self.dyn_out_crv.getShape().create
+        self.follicle.getShape().outHair >> \
+                hair_system.getShape().inputHair[hair_index]
+        hair_system.getShape().outputHair[hair_index] >> \
+                self.follicle.getShape().currentPosition
 
-        print 'outputHair',pm.getAttr('%s.outputHair' % \
-                self.hair_system.getShape().name())
 
+        # drive the input curve with a blendshape to blend btwn 
+        # the manual and dynmanic curves
+        self.man_dyn_bs = pm.blendShape(
+                self.man_crv, self.dyn_out_crv, self.curve_in, 
+                name='%s_manDyn_%s' % (self.name, BLENDSHAPE))[0]
+
+        pm.addAttr(self.controls[0],
+                longName='manDynBlend', attributeType='float',
+                minValue = 0.0, maxValue = 1.0, keyable=True)
+
+        pma = pm.createNode('plusMinusAverage', skipSelect=1,
+                            name = '%s_%s' % (self.name, PMA))
+        pma.setAttr('operation','Subtract')
+        pma.setAttr('input1D[0]',1)
+
+        self.controls[0].manDynBlend >> self.man_dyn_bs.weight[1]
+        self.controls[0].manDynBlend >> pma.input1D[1]
+        pma.output1D >> self.man_dyn_bs.weight[0]
