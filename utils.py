@@ -173,7 +173,8 @@ def get_ws_location(node=None,mtype='transform'):
     if node == None:
         node = get_selected(mtype)[0]
 
-    node = pm.ls(node)[0]
+    node = pm.PyNode(node)
+        
     return pm.xform(node, query=True, worldSpace=True, rotatePivot=True)
 
 ##  create pm objects for the given list of nodes

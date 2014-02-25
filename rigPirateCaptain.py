@@ -66,15 +66,170 @@ innerTentacle_locs = [
         ]
 
 outerTentacle_locs = [
+        # S3
         {'outerTentacleS3_0001':{
             'start_loc':'outerTentacleS3_0001_top_loc',
             'end_loc':'outerTentacleS3_0001_bottom_loc',
-            'color':Ctrl.RED,
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS3_0002':{
+            'start_loc':'outerTentacleS3_0002_top_loc',
+            'end_loc':'outerTentacleS3_0002_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS3_0003':{
+            'start_loc':'outerTentacleS3_0003_top_loc',
+            'end_loc':'outerTentacleS3_0003_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS3_0004':{
+            'start_loc':'outerTentacleS3_0004_top_loc',
+            'end_loc':'outerTentacleS3_0004_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS3_0005':{
+            'start_loc':'outerTentacleS3_0005_top_loc',
+            'end_loc':'outerTentacleS3_0005_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS3_0006':{
+            'start_loc':'outerTentacleS3_0006_top_loc',
+            'end_loc':'outerTentacleS3_0006_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS3_0007':{
+            'start_loc':'outerTentacleS3_0007_top_loc',
+            'end_loc':'outerTentacleS3_0007_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS3_0008':{
+            'start_loc':'outerTentacleS3_0008_top_loc',
+            'end_loc':'outerTentacleS3_0008_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS3_0009':{
+            'start_loc':'outerTentacleS3_0009_top_loc',
+            'end_loc':'outerTentacleS3_0009_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        # S2
+        {'outerTentacleS2_0001':{
+            'start_loc':'outerTentacleS2_0001_top_loc',
+            'end_loc':'outerTentacleS2_0001_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_0006':{
+            'start_loc':'outerTentacleS2_0006_top_loc',
+            'end_loc':'outerTentacleS2_0006_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS2_0007':{
+            'start_loc':'outerTentacleS2_0007_top_loc',
+            'end_loc':'outerTentacleS2_0007_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_0008':{
+            'start_loc':'outerTentacleS2_0008_top_loc',
+            'end_loc':'outerTentacleS2_0008_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_0009':{
+            'start_loc':'outerTentacleS2_0009_top_loc',
+            'end_loc':'outerTentacleS2_0009_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_00010':{
+            'start_loc':'outerTentacleS2_0010_top_loc',
+            'end_loc':'outerTentacleS2_0010_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_00011':{
+            'start_loc':'outerTentacleS2_0011_top_loc',
+            'end_loc':'outerTentacleS2_0011_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_00012':{
+            'start_loc':'outerTentacleS2_0012_top_loc',
+            'end_loc':'outerTentacleS2_0012_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS2_00013':{
+            'start_loc':'outerTentacleS2_0013_top_loc',
+            'end_loc':'outerTentacleS2_0013_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS2_00014':{
+            'start_loc':'outerTentacleS2_0014_top_loc',
+            'end_loc':'outerTentacleS2_0014_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS2_00015':{
+            'start_loc':'outerTentacleS2_0015_top_loc',
+            'end_loc':'outerTentacleS2_0015_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS2_00016':{
+            'start_loc':'outerTentacleS2_0016_top_loc',
+            'end_loc':'outerTentacleS2_0016_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS2_00017':{
+            'start_loc':'outerTentacleS2_0017_top_loc',
+            'end_loc':'outerTentacleS2_0017_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        # S1
+        {'outerTentacleS1_0001':{
+            'start_loc':'outerTentacleS1_0001_top_loc',
+            'end_loc':'outerTentacleS1_0001_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS1_0002':{
+            'start_loc':'outerTentacleS1_0002_top_loc',
+            'end_loc':'outerTentacleS1_0002_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS1_0003':{
+            'start_loc':'outerTentacleS1_0003_top_loc',
+            'end_loc':'outerTentacleS1_0003_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS1_0004':{
+            'start_loc':'outerTentacleS1_0004_top_loc',
+            'end_loc':'outerTentacleS1_0004_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS1_0005':{
+            'start_loc':'outerTentacleS1_0005_top_loc',
+            'end_loc':'outerTentacleS1_0005_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':None,}},
+        {'outerTentacleS1_0006':{
+            'start_loc':'outerTentacleS1_0006_top_loc',
+            'end_loc':'outerTentacleS1_0006_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS1_0007':{
+            'start_loc':'outerTentacleS1_0007_top_loc',
+            'end_loc':'outerTentacleS1_0007_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':None,}},
+        {'outerTentacleS1_0008':{
+            'start_loc':'outerTentacleS1_0008_top_loc',
+            'end_loc':'outerTentacleS1_0008_bottom_loc',
+            'color':Ctrl.BRICK,
             'parent':None,}},
         ]
 
 def build():
-    innerTentacle_locs = [] #TODO: take this out
+
+    #
+    # Inner Tentacles
+    #
+
+    innerTentacle_ctrls = []
+    pm.addAttr(all_ctrl, longName='innerTentacleGeo',
+               attributeType='bool', defaultValue=True, keyable=True)
     for dict_ in innerTentacle_locs:
         group = dict_.keys()[0]
         attrs = dict_.values()[0]
@@ -96,7 +251,7 @@ def build():
                 num_ctrls = 6,
                 name = name,
                 color     = attrs['color'])
-        ctrls.append(drivers.controls)
+        innerTentacle_ctrls.extend(drivers.controls)
 
         geo_grp = "%s%s" % (NAMESPACE,group)
         geo = pm.listRelatives(geo_grp, children=True, path=True)
@@ -108,9 +263,27 @@ def build():
                             drivers.controls[0], name='%s_ctrlGrp' % group)
         ribbon.follicle_grp.setParent(ctrl_grp)
         ctrl_grp.setParent(all_ctrl)
+        all_ctrl.innerTentacleGeo >> pm.PyNode(NAMESPACE+group).visibility
+
+    pm.addAttr(all_ctrl, longName='innerTentacleCtrls',
+               attributeType='bool', defaultValue=True, keyable=True)
+    for ctrl in innerTentacle_ctrls:
+        all_ctrl.innerTentacleCtrls >> ctrl.visibility
+
+    ctrls.extend(innerTentacle_ctrls)
+    pm.sets(innerTentacle_ctrls,name="innerTentacleCtrls")
 
 
+
+
+    #
+    # Outer Tentacles
+    #
+
+    pm.addAttr(all_ctrl, longName='outerTentacleGeo',
+               attributeType='bool', defaultValue=True, keyable=True)
     hair_sys = None
+    outerTentacle_ctrls = []
     for dict_ in outerTentacle_locs:
         # get the names
         mesh = dict_.keys()[0]
@@ -120,6 +293,7 @@ def build():
         name = name[0] + name[-1]
 
         # build the rig
+        print "Building Spline for",name
         spline = IkSpline(
                 start_loc = attrs['start_loc'],
                 end_loc = attrs['end_loc'],
@@ -128,6 +302,7 @@ def build():
                 num_joints = 10)
         joints = [x.name() for x in spline.joints]
 
+        print "Building ManDynHair for",name
         mdhair = ManDynHair(
                 curve = spline.ik_crv,
                 start_loc = spline.start_loc,
@@ -135,15 +310,19 @@ def build():
                 num_ctrls = 5,
                 name = name,
                 color = attrs['color'],
-                hair_system = hair_sys)
+                hair_system = hair_sys,
+                ctrl_radius = 1)
         hair_sys = mdhair.hair_system
 
-        ctrls.append(mdhair.controls)
+        outerTentacle_ctrls.extend(mdhair.controls)
 
         # update the skinning dict
         mesh = NAMESPACE + mesh
         skin_dict[NAMESPACE][skin.SMOOTH].update(
                 {mesh:joints})
+
+        # set geo.visibility to ctrl.visibiltiy
+        mdhair.controls[0].visibility >> pm.PyNode(mesh).visibility
 
         # group everything together
         ctrl_grp = pm.group(
@@ -153,8 +332,19 @@ def build():
                 name = '%s_ctrlGrp' % name)
         ctrl_grp.setParent(all_ctrl)
 
-    ## SKIN
-    print skin_dict
+        all_ctrl.outerTentacleGeo >> pm.PyNode(mesh).visibility
+
+    pm.addAttr(all_ctrl, longName='outerTentacleCtrls',
+               attributeType='bool', defaultValue=True, keyable=True)
+    for ctrl in outerTentacle_ctrls:
+        all_ctrl.outerTentacleCtrls >> ctrl.visibility
+    
+    ctrls.extend(outerTentacle_ctrls)
+    pm.sets(outerTentacle_ctrls,name="outerTentacleCtrls")
+
+    #
+    # SKIN
+    #
     skin.bind(skin_dict)
 
     # save skin dict

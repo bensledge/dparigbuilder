@@ -20,8 +20,6 @@ HAIR_SYS = 'hsys'
 PMA = 'pma'     # plus minus average
 
 # utils
-
-
 def place_joint(position,name='joint',parent=None):
     joint = pm.joint(name=name, position=(0,0,0))
     joint.setTranslation(position, 'world')
@@ -45,7 +43,7 @@ def place_joint_chain(start_loc, end_loc, num_joints=3,
     dist = dist / float(num_joints-1)
 
     joints.append(start_joint)
-    for i in range(2,num_joints-1):
+    for i in range(2,num_joints):
         inside_joint = pm.insertJoint(joints[-1])
         inside_joint = u.to_pm_nodes(inside_joint)[0]
         inside_joint = pm.rename(inside_joint,
@@ -59,12 +57,16 @@ def place_joint_chain(start_loc, end_loc, num_joints=3,
 
 class Ctrl(object):
     CIRCLE  = 'circle'
-
-    RED = 13
+    
+    CRIMSON = 4
+    NAVY = 5
     BLUE = 6
+    BRICK = 12
+    RED = 13
     GREEN = 14
     YELLOW = 17
-    
+    AQUA = CYAN = 18
+
     # shapes
     def circle(name, radius, normal, color):
         circ =  pm.circle(
@@ -284,7 +286,7 @@ class InlineOffset(object):
 
 class LinearSkin(object):
     def __init__(self, mesh, start_loc, end_loc, num_ctrls=3, name="ls",
-            color=0):
+                 color=0, radius=2):
         #super(LinearSkin,self).__init__()
         self.mesh_in = mesh
         self.start_loc = start_loc
@@ -292,6 +294,7 @@ class LinearSkin(object):
         self.num_ctrls = num_ctrls
         self.name = name
         self.color = color
+        self.radius = radius
 
         self.controls = []
         self.drivers = []
@@ -315,7 +318,7 @@ class LinearSkin(object):
                 maximumInfluences   = 2)
 
         self.controls = InlineOffset(
-                self.drivers, radius=2, color=self.color).controls
+                self.drivers,radius=self.radius,color=self.color).controls
 
 class IkSpline(object):
     def __init__(self, start_loc, end_loc, num_spans, num_joints,
@@ -341,15 +344,21 @@ class IkSpline(object):
                 num_joints = self.num_joints,
                 parent = None, 
                 name = self.name)
+        self.joints[0].setAttr('visibility', False)
         
         self.ik_handle, self.ik_effector, self.ik_crv = pm.ikHandle(
                 startJoint = self.joints[0],
                 endEffector = self.joints[-1],
                 name = self.name + '_ikHandle',
                 solver = 'ikSplineSolver')
+        self.ik_crv = pm.PyNode(self.ik_crv)
+        self.ik_handle = pm.PyNode(self.ik_handle)
+
         self.ik_handle.inheritsTranform = False
+        self.ik_handle.setAttr('visibility',False)
 
         self.ik_crv.rename(self.name + '_crv')
+        self.ik_crv.setAttr('visibility',False)
 
         pm.rebuildCurve(self.ik_crv,
                 degree = 3,
@@ -359,13 +368,15 @@ class IkSpline(object):
 
 class ManDynHair(object):
     def __init__(self, curve, start_loc, end_loc, num_ctrls=3,
-                 name='manDynHair', color=0, hair_system=None):
+                 name='manDynHair', color=0, hair_system=None, 
+                 ctrl_radius=2):
         self.curve_in = pm.PyNode(curve)
         self.start_loc = pm.PyNode(start_loc)
         self.end_loc = pm.PyNode(end_loc)
         self.num_ctrls = num_ctrls
         self.name = name
         self.color = color
+        self.radius = ctrl_radius
 
         self.man_crv = None
         self.dyn_in_crv = None
@@ -381,11 +392,11 @@ class ManDynHair(object):
 
     def build(self):
         self.curve_in.setAttr('inheritsTransform',False)
-        print self.curve_in,type(self.curve_in)
         # create a crv and ctrls to act as a manual driver for the sys
         self.man_crv = pm.duplicate(self.curve_in,returnRootsOnly=True, 
                                     name = '%s_man_%s' % (self.name,CURVE))
         self.man_crv[0].inheritsTransform = False
+        self.man_crv[0].setAttr('visibility',False)
 
         linear_skin = LinearSkin(
                 mesh = self.man_crv, 
@@ -393,7 +404,8 @@ class ManDynHair(object):
                 end_loc = self.end_loc,
                 num_ctrls = self.num_ctrls,
                 name = self.name,
-                color = self.color)
+                color = self.color,
+                radius = self.radius)
 
         self.driver_joints = linear_skin.drivers
         self.controls = linear_skin.controls
@@ -401,6 +413,7 @@ class ManDynHair(object):
         self.dyn_in_crv = pm.duplicate(self.man_crv,returnRootsOnly=1,
                                        name = '%s_dynIn_%s' % (self.name,
                                                                CURVE))[0]
+        self.dyn_in_crv.setAttr('visibility',False)
         # drive the dynmanic input curve with the manual curve
         self.shape_bs = pm.blendShape(self.man_crv, self.dyn_in_crv,
                                       name = '%s_shape_%s' % (self.name,
@@ -412,14 +425,16 @@ class ManDynHair(object):
                 self.dyn_in_crv, returnRootsOnly=1,
                 name = '%s_dynOut_%s' % (self.name, CURVE))[0]
         self.dyn_out_crv.inheritsTransform = False
+        self.dyn_out_crv.setAttr('visibility',False)
         self.follicle = pm.createNode('follicle', skipSelect=1, 
                                       name = '%s_%sShape' % (
                                           self.name,FOLLICLE))
         self.follicle = pm.rename(self.follicle.getParent(),
                                   '%s_%s' % (self.name,FOLLICLE))
+        self.follicle.setAttr('visibility',False)
         self.follicle.restPose.set(1)
         
-        if self.hair_system == None or not pm.objExist(self.hair_system):
+        if self.hair_system == None or not pm.objExists(self.hair_system):
             self.hair_system = pm.createNode(
                     'hairSystem', skipSelect=1,
                     name='%s_%sShape' % (self.name,HAIR_SYS))
@@ -427,6 +442,7 @@ class ManDynHair(object):
                                          '%s_%s' % (self.name,HAIR_SYS))
             pm.PyNode('time1').outTime >> \
                     self.hair_system.getShape().currentTime
+            self.hair_system.setAttr('visibility',False)
 
         hair_system = pm.PyNode(self.hair_system)
         hair_index=len(hair_system.getShape().inputHair.listConnections())
