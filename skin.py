@@ -34,7 +34,8 @@ def bind(skin_dict):
                             mesh,
                             joints_named,
                             toSelectedBones=True, 
-                            maximumInfluences=len(joints_named))
+                            #maximumInfluences=len(joints_named))
+                            maximumInfluences=3)
                 except Exception as e:
                     print 'Smooth Bind:',e
                 #print mesh

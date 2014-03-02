@@ -6,6 +6,8 @@ import defines
 #import soloBlock as sb
 #reload(sb)
 
+JSON_INDENT = 0
+
 # joint orientation
 PRIMARY_AXIS    = 'xzy'
 L_SECONDARY_AXIS= 'zdown'
@@ -17,16 +19,18 @@ R_SECONDARY_AXIS= 'zdown'
 ##  Creates the entry for a xform node in a dict-recursively grabs children.
 #   @param node The 'root' node to start at.
 def gen_node_entry(node):
-    if type(node) != pm.nodetypes.Joint:
-        node = pm.ls(node)[0]
+    node = pm.PyNode(node)
+    if type(node) != pm.nodetypes.Transform:
+        raise TypeError, "must be xform node"
+
+    parent = node.getParent()
+    if parent: parent = parent.name()
+
     entry = {
             'name': node.name(),
-            # get the [x,y,z] coords. of the worldspace position
-            'position':node.getScalePivot(space='world').get()[:3],
-            # list the children of the current node, then call 
-            # gen_node_entry on each and add it to the list
-            'children':[gen_node_entry(x) for x in \
-                node.listRelatives(children=True, type='transform')],
+            'type': node.type(),
+            'matrix':node.getMatrix(worldSpace=True).formated(),
+            'parent':parent,
             }
     return entry
 
@@ -44,7 +48,7 @@ def build_nodes_dict(nodes):
 #   @param data The data to write out
 def write_file(path,data):
     fn = open(path,'w')
-    json.dump(data,fn,indent=defines.JSON_INDENT)
+    json.dump(data,fn,indent=JSON_INDENT)
     fn.close()
 
 ##  Returns the current selection in Maya

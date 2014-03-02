@@ -1,7 +1,8 @@
 import pymel.core as pm
 
 import blocks
-from blocks import RibbonIk, LinearSkin, Ctrl, ManDynHair, IkSpline
+from blocks import RibbonIk, LinearSkin, Ctrl, ManDynHair, IkSpline, IkSC,\
+                   InlineOffset, place_xform, BIND, JOINT, IK
 import skin
 import utils 
 reload(utils)
@@ -10,9 +11,17 @@ reload(skin)
 
 NAMESPACE = 'surface:model:'
 
+#
+# Save the locators to file...just in case
+#
+loc_shapes = pm.ls(exactType='locator')
+locs = [x.getParent() for x in pm.ls(exactType='locator')]
+json = [utils.gen_node_entry(x) for x in locs]
+utils.write_file('rigPirateCaptain_locs.json',json)
+
+
 ctrls = []
-all_ctrl = blocks.Ctrl(name='all_ctrl', shape=Ctrl.CIRCLE, radius=20,
-                       normal=[0,1,0],color=Ctrl.YELLOW, group=False).ctrl
+all_ctrl = None
 
 skin_dict = {
         # namespace:{
@@ -138,42 +147,42 @@ outerTentacle_locs = [
             'end_loc':'outerTentacleS2_0009_bottom_loc',
             'color':Ctrl.NAVY,
             'parent':None,}},
-        {'outerTentacleS2_00010':{
+        {'outerTentacleS2_0010':{
             'start_loc':'outerTentacleS2_0010_top_loc',
             'end_loc':'outerTentacleS2_0010_bottom_loc',
             'color':Ctrl.NAVY,
             'parent':None,}},
-        {'outerTentacleS2_00011':{
+        {'outerTentacleS2_0011':{
             'start_loc':'outerTentacleS2_0011_top_loc',
             'end_loc':'outerTentacleS2_0011_bottom_loc',
             'color':Ctrl.NAVY,
             'parent':None,}},
-        {'outerTentacleS2_00012':{
+        {'outerTentacleS2_0012':{
             'start_loc':'outerTentacleS2_0012_top_loc',
             'end_loc':'outerTentacleS2_0012_bottom_loc',
             'color':Ctrl.BRICK,
             'parent':None,}},
-        {'outerTentacleS2_00013':{
+        {'outerTentacleS2_0013':{
             'start_loc':'outerTentacleS2_0013_top_loc',
             'end_loc':'outerTentacleS2_0013_bottom_loc',
             'color':Ctrl.BRICK,
             'parent':None,}},
-        {'outerTentacleS2_00014':{
+        {'outerTentacleS2_0014':{
             'start_loc':'outerTentacleS2_0014_top_loc',
             'end_loc':'outerTentacleS2_0014_bottom_loc',
             'color':Ctrl.NAVY,
             'parent':None,}},
-        {'outerTentacleS2_00015':{
+        {'outerTentacleS2_0015':{
             'start_loc':'outerTentacleS2_0015_top_loc',
             'end_loc':'outerTentacleS2_0015_bottom_loc',
             'color':Ctrl.BRICK,
             'parent':None,}},
-        {'outerTentacleS2_00016':{
+        {'outerTentacleS2_0016':{
             'start_loc':'outerTentacleS2_0016_top_loc',
             'end_loc':'outerTentacleS2_0016_bottom_loc',
             'color':Ctrl.BRICK,
             'parent':None,}},
-        {'outerTentacleS2_00017':{
+        {'outerTentacleS2_0017':{
             'start_loc':'outerTentacleS2_0017_top_loc',
             'end_loc':'outerTentacleS2_0017_bottom_loc',
             'color':Ctrl.BRICK,
@@ -220,13 +229,54 @@ outerTentacle_locs = [
             'color':Ctrl.BRICK,
             'parent':None,}},
         ]
+lowerBell_locs = [
+        {'lowerBell01_loc':{
+            'color':Ctrl.BLUE,
+            'parent':'root',}},
+        {'lowerBell02_loc':{
+            'color':Ctrl.BLUE,
+            'parent':'root',}},
+        {'lowerBell03_loc':{
+            'color':Ctrl.BLUE,
+            'parent':'root',}},
+        {'lowerBell04_loc':{
+            'color':Ctrl.YELLOW,
+            'parent':'root',}},
+        {'lowerBell05_loc':{
+            'color':Ctrl.RED,
+            'parent':'root',}},
+        {'lowerBell06_loc':{
+            'color':Ctrl.RED,
+            'parent':'root',}},
+        {'lowerBell07_loc':{
+            'color':Ctrl.RED,
+            'parent':'root',}},
+        {'lowerBell08_loc':{
+            'color':Ctrl.RED,
+            'parent':'root',}},
+        {'lowerBell09_loc':{
+            'color':Ctrl.RED,
+            'parent':'root',}},
+        {'lowerBell10_loc':{
+            'color':Ctrl.YELLOW,
+            'parent':'root',}},
+        {'lowerBell11_loc':{
+            'color':Ctrl.BLUE,
+            'parent':'root',}},
+        {'lowerBell12_loc':{
+            'color':Ctrl.BLUE,
+            'parent':'root',}},
+        ]
+upperBell_locs = [
+        {'root_loc':{
+            'color':Ctrl.YELLOW,
+            'parent':None,}},
+        {'upperBell_loc':{
+            'color':Ctrl.YELLOW,
+            'parent':'root',}}
+        ]
 
-def build():
-
-    #
-    # Inner Tentacles
-    #
-
+def inner_tentacles(all_ctrl):
     innerTentacle_ctrls = []
     pm.addAttr(all_ctrl, longName='innerTentacleGeo',
                attributeType='bool', defaultValue=True, keyable=True)
@@ -273,13 +323,7 @@ def build():
     ctrls.extend(innerTentacle_ctrls)
     pm.sets(innerTentacle_ctrls,name="innerTentacleCtrls")
 
-
-
-
-    #
-    # Outer Tentacles
-    #
-
+def outer_tentacles(all_ctrl):
     pm.addAttr(all_ctrl, longName='outerTentacleGeo',
                attributeType='bool', defaultValue=True, keyable=True)
     hair_sys = None
@@ -342,6 +386,125 @@ def build():
     ctrls.extend(outerTentacle_ctrls)
     pm.sets(outerTentacle_ctrls,name="outerTentacleCtrls")
 
+def upper_bell(all_ctrl):
+    upperBell_ctrls = []
+    upperBell_joints = []
+    for dict_ in upperBell_locs:
+        loc = dict_.keys()[0]
+        attrs = dict_.values()[0]
+
+        name = loc.split('_')[0]
+        loc = pm.PyNode(loc)
+
+        joint = place_xform(name=name+'_%s'%BIND, mtype='joint',
+                            matrix=loc.getMatrix(worldSpace=True),
+                            worldSpace=True)
+        parent = attrs['parent']
+        if parent:
+            parent = parent + '_%s' % BIND
+        joint.setParent(parent)
+        ctrl = InlineOffset(joint, radius=10, ctrl_shape='circle',
+                            color=attrs['color']).controls[0]
+        upperBell_ctrls.append(ctrl)
+        upperBell_joints.append(joint)
+
+    pm.addAttr(all_ctrl, longName='upperBellCtrls',attributeType='bool',
+               defaultValue=True, keyable=True)
+    for ctrl in upperBell_ctrls:
+        all_ctrl.upperBellCtrls >> ctrl.visibility
+    upperBell_ctrls[0].setParent(all_ctrl)
+
+    return {'ctrls':upperBell_ctrls, 'joints':upperBell_joints}
+
+
+def lower_bell(all_ctrl):
+    lowerBell_ctrls = []
+    lowerBell_joints = []
+    for dict_ in lowerBell_locs:
+        loc = dict_.keys()[0]
+        attrs = dict_.values()[0]
+
+        name = loc.split('_')[0]
+        loc = pm.PyNode(loc)
+                
+        parent_joint = place_xform(name=name + '_%s' % BIND, mtype='joint',
+                                    matrix=loc.getMatrix(worldSpace=True),
+                                    worldSpace=True)
+        parent = attrs['parent']
+        if parent:
+            parent = parent + '_%s' % BIND
+        parent_joint.setParent(parent)
+        parent_ctrl = InlineOffset(
+                parent_joint, radius=1,ctrl_shape='circle',
+                color=attrs['color']).controls[0]
+        lowerBell_ctrls.append(parent_ctrl)
+        lowerBell_joints.append(parent_joint)
+        children = loc.listRelatives(children=True,type='transform')
+        for endloc in children:
+            endname = endloc.name().split('_')[0]
+            endjoint = place_xform(
+                    name=endname+'_%s'%BIND,mtype='joint',
+                    matrix=endloc.getMatrix(worldSpace=True),
+                    worldSpace=True)
+            ikjoint = pm.duplicate(
+                    parent_joint,name=endname+'_%s'%(IK+JOINT.title()),
+                    parentOnly=True)[0]
+            ikjoint = pm.PyNode(ikjoint)
+            ikjoint.setParent(parent_joint)
+            endjoint.setParent(ikjoint)
+            ik = IkSC(start_joint=ikjoint, end_joint=endjoint, 
+                      name=endname, color=attrs['color'], radius=0.5)
+            lowerBell_ctrls.extend(ik.controls)
+            ik.controls[0].getParent().setParent(parent_joint)
+
+            lowerBell_joints.append(endjoint)
+
+    pm.addAttr(all_ctrl, longName='lowerBellCtrls',
+               attributeType='bool', defaultValue=True, keyable=True)
+    for ctrl in lowerBell_ctrls:
+        all_ctrl.lowerBellCtrls >> ctrl.visibility
+
+    ctrls.extend(lowerBell_ctrls)
+    pm.sets(lowerBell_ctrls,name='lowerBellCtrls')
+    
+    return {'ctrls':lowerBell_ctrls, 'joints':lowerBell_joints}
+
+def bell(all_ctrl):
+    upper = upper_bell(all_ctrl)
+    lower = lower_bell(all_ctrl)
+    joints = [x.name() for x in upper['joints']]
+
+    skin_dict[NAMESPACE][skin.SMOOTH].update(
+            {NAMESPACE + 'innerDome': joints})
+
+    joints = joints + [x.name() for x in lower['joints']]
+
+    skin_dict[NAMESPACE][skin.SMOOTH].update(
+            {NAMESPACE + 'headDome': joints})
+
+
+
+def build():
+    all_ctrl = blocks.Ctrl(name='all_ctrl', shape=Ctrl.CIRCLE, radius=20,
+                        normal=[0,1,0],color=Ctrl.YELLOW, group=False).ctrl
+
+    #
+    # Inner Tentacles
+    #
+
+    inner_tentacles(all_ctrl)
+
+
+    #
+    # Outer Tentacles
+    #
+    outer_tentacles(all_ctrl)
+    
+    #
+    # LOWER BELL
+    #
+    bell(all_ctrl)
+    
     #
     # SKIN
     #

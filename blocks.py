@@ -1,4 +1,3 @@
-
 #from pymel.core import * 
 import pymel.core as pm
 #from pymel import *
@@ -18,6 +17,8 @@ CTRL = 'ctrl'
 BLENDSHAPE = 'bs'
 HAIR_SYS = 'hsys'
 PMA = 'pma'     # plus minus average
+IK_HANDLE = 'ikHandle'
+IK = 'ik'
 
 # utils
 def place_joint(position,name='joint',parent=None):
@@ -55,8 +56,47 @@ def place_joint_chain(start_loc, end_loc, num_joints=3,
 
     return joints
 
+def place_xform(name, mtype, matrix, parent=None, worldSpace=True):
+    pm.select(clear=True)
+
+    if mtype == 'joint':
+        xform = pm.joint(name=name)
+    elif mtype == 'group':
+        xform = pm.group(name=name, empty=True)
+    else:
+        xform = pm.spaceLocator(name=name)
+
+    if worldSpace:
+        xform.setMatrix(matrix,worldSpace=True)
+    else:
+        xform.setMatrix(matrix,objectSpace=True)
+
+    if parent:
+        xform.setParent(pm.PyNode(parent))
+    pm.makeIdentity(xform, apply=True)
+
+    return xform
+
+def place_xform_list(xform_list, worldSpace=True):
+    xforms = []
+    for xform in xform_list:
+        xf = place_xform(name=xform['name'], mtype=xform['type'],
+                         matrx=xform['matrix'],parent=xform['parent'],
+                         worldSpace=worldSpace)
+        xforms.append(xf)
+
+    return xforms
+
+def aim_normal(node, normal=[1,0,0]):
+    loc = pm.spaceLocator(name='tmp_aimNormal_loc')
+    loc.setTranslation(normal)
+    pm.delete(pm.aimConstraint(loc, node, aimVector=(0,1,0)))
+    pm.delete(loc)
+
 class Ctrl(object):
-    CIRCLE  = 'circle'
+    CIRCLE = 'circle'
+    BOX = 'box'
+    ARROWS4 = 'arrows4'
     
     CRIMSON = 4
     NAVY = 5
@@ -66,6 +106,7 @@ class Ctrl(object):
     GREEN = 14
     YELLOW = 17
     AQUA = CYAN = 18
+
 
     # shapes
     def circle(name, radius, normal, color):
@@ -78,12 +119,72 @@ class Ctrl(object):
         circ.getShape().overrideEnabled.set(True)
         circ.getShape().overrideColor.set(color)
         return circ
+
+    def box(name, radius, normal, color):
+        r = radius
+        points = [(-1*r, -1*r,-1*r),
+                  (-1*r, -1*r, 1*r),
+                  ( 1*r, -1*r, 1*r),
+                  ( 1*r, -1*r,-1*r),
+                  (-1*r, -1*r,-1*r),
+                  (-1*r,  1*r,-1*r),
+                  (-1*r,  1*r, 1*r),
+                  (-1*r, -1*r, 1*r),
+                  (-1*r,  1*r, 1*r),
+                  ( 1*r,  1*r, 1*r),
+                  ( 1*r, -1*r, 1*r),
+                  ( 1*r,  1*r, 1*r),
+                  ( 1*r,  1*r,-1*r),
+                  ( 1*r, -1*r,-1*r),
+                  ( 1*r,  1*r,-1*r),
+                  (-1*r,  1*r,-1*r)]
+
+        b = pm.curve(
+                point = points,
+                name=name,
+                degree = 1,
+                worldSpace = True)
+        aim_normal(b, normal=normal)
+        pm.makeIdentity(b,apply=True)
+        b.getShape().overrideEnabled.set(True)
+        b.getShape().overrideColor.set(color)
+        return b
+
+    def arrows4(name, radius, normal, color):
+        r = radius
+        points = [(0.25*r, 0*r, 0.75*r),
+                  (0*r, 0*r, 1*r),
+                  (-.25*r, 0*r, 0.75*r),
+                  (0.25*r, 0*r, 0.75*r),
+                  (0*r, 0*r, 1*r),
+                  (0*r, 0*r, -1*r),
+                  (0.25*r, 0*r, -.75*r),
+                  (-.25*r, 0*r, -.75*r),
+                  (0*r, 0*r, -1*r),
+                  (0*r, 0*r, 0*r),
+                  (-1*r, 0*r, 0*r),
+                  (-.75*r, 0*r, 0.25*r),
+                  (-.75*r, 0*r, -.25*r),
+                  (-1*r, 0*r, 0*r),
+                  (1*r, 0*r, 0*r),
+                  (0.75*r, 0*r, -.25*r),
+                  (0.75*r, 0*r, 0.25*r),
+                  (1*r, 0*r, 0)]
+
+        a = pm.curve(point=points, name=name, degree=1, worldSpace=True)
+        aim_normal(a, normal=normal)
+        pm.makeIdentity(a,apply=True)
+        a.getShape().overrideEnabled.set(True)
+        a.getShape().overrideColor.set(color)
+        return a
     
     build_shape = {
         CIRCLE: circle,
+        BOX: box,
+        ARROWS4: arrows4,
     }
     def __init__(self,xform=None, name="ctrl", shape=CIRCLE, radius=1.0,
-                 normal=[1,0,0], group=True, color = 0):
+                 normal=[1,0,0], group=True, color = 0, lock = None):
         self.name   = name
         self.shape  = shape
         self.radius = radius
@@ -91,6 +192,7 @@ class Ctrl(object):
         self.xform  = xform
         self.group  = group
         self.color  = color
+        self.lock = lock
 
         self.ctrl   = None
 
@@ -105,8 +207,14 @@ class Ctrl(object):
             pos_obj = pm.group(self.ctrl, world=True, 
                                name=self.ctrl.name() + 'Grp')
         if self.xform:
-            u.snap_to(guide = self.xform, nodes = self.ctrl)
+            pm.delete(pm.orientConstraint(self.xform,pos_obj))
+            pm.delete(pm.pointConstraint(self.xform,pos_obj))
         
+        if type(self.lock) != list:
+            self.lock = []
+        for attr in self.lock:
+            pm.Attribute(self.ctrl.name() + '.%s' % attr).lock()
+
         return self.ctrl
 
 def make_non_rendering(node):
@@ -209,60 +317,18 @@ class RibbonIk(object):
         # create the bind joints
         for i,f in enumerate(follicles):
             self.bind_joints.append(place_joint(
-                position= u.get_ws_location(f),
-                name    = '%s%s%02d_%s'%(self.name,JOINT.title(),i+1,BIND),
-                parent  = f))
-
-class WireCurve(object):
-    def __init__(self, mesh, start_loc, end_loc, num_spans=9, num_ctrls=3,
-                 name='wireCrv'):
-        raise NotImplementedError
-        super(WireCurve,self).__init__()
-        self.mesh_in    = mesh
-        self.start_loc  = start_loc
-        self.end_loc    = end_loc
-        self.num_spans  = num_spans
-        self.num_ctrls  = num_ctrls
-        self.name       = name
-        self.wire_crv   = None
-
-        self.build()
-
-    def build(self):
-        # create curve
-        self.wire_crv = pm.curve(
-                name    = "%s_%s" % (self.name, CURVE),
-                degree  = 1,
-                point   = [u.get_ws_location(self.start_loc),
-                           u.get_ws_location(self.end_loc)])
-        pm.rebuildCurve(
-                self.wire_crv,
-                #constructionHistory = False,
-                degree  = 3,
-                spans   = self.num_spans,
-                keepRange=0)
-        self.wire_crv.centerPivots()
-        # create deformer 
-        dist = u.distance(self.start_loc, self.end_loc)
-        self.wire_def   = pm.wire(
-                self.mesh_in,
-                wire    = self.wire_crv,
-                name    = "%s_%s" % (self.name, WIRE),
-                dropoffDistance=(0,dist))
-
-        # create Clusters
-        num_cvs = self.num_spans + 2
-
-        # create ctrls
-        raise NotImplemented
+                position = u.get_ws_location(f),
+                name = '%s%s%02d_%s'%(self.name,JOINT.title(),i+1,BIND),
+                parent = f))
 
 class InlineOffset(object):
-    def __init__(self,joints,radius=1.0,color=0):
+    def __init__(self,joints,radius=1.0,color=0,ctrl_shape=Ctrl.ARROWS4):
         if type(joints) != list:
             joints  = [joints]
         self.joints = joints
         self.radius = radius
         self.color  = color
+        self.ctrl_shape = ctrl_shape
 
         self.controls  = []
 
@@ -274,19 +340,19 @@ class InlineOffset(object):
             ctrl   = Ctrl(
                     xform = joint,
                     name    = joint.name() + '_ctrl',
-                    shape   = Ctrl.CIRCLE,
+                    shape   = self.ctrl_shape,
                     radius  = self.radius,
                     normal  = [0,1,0],
                     color   = self.color,
                     group   = False).ctrl
             ctrl.setParent(parent)
-            pm.makeIdentity(ctrl, apply=True)
+            #pm.makeIdentity(ctrl, apply=True)
             joint.setParent(ctrl)
             self.controls.append(ctrl)
 
 class LinearSkin(object):
     def __init__(self, mesh, start_loc, end_loc, num_ctrls=3, name="ls",
-                 color=0, radius=2):
+                 color=0, radius=2,ctrl_shape=Ctrl.CIRCLE):
         #super(LinearSkin,self).__init__()
         self.mesh_in = mesh
         self.start_loc = start_loc
@@ -295,6 +361,7 @@ class LinearSkin(object):
         self.name = name
         self.color = color
         self.radius = radius
+        self.ctrl_shape = ctrl_shape
 
         self.controls = []
         self.drivers = []
@@ -311,6 +378,7 @@ class LinearSkin(object):
                 num_joints = self.num_ctrls,
                 parent = None,
                 name = '%s_%s' % (self.name, DRVR))
+        pm.delete(pm.orientConstraint(self.start_loc, self.drivers[0]))
 
         self.skin = pm.skinCluster(
                 self.drivers, self.mesh_in,
@@ -318,7 +386,41 @@ class LinearSkin(object):
                 maximumInfluences   = 2)
 
         self.controls = InlineOffset(
-                self.drivers,radius=self.radius,color=self.color).controls
+                self.drivers,radius=self.radius,color=self.color,
+                ctrl_shape=self.ctrl_shape).controls
+
+class IkSC(object):
+    def __init__(self, start_joint, end_joint, name='ik',color=0,
+                 radius=1,ctrl_shape=Ctrl.BOX):
+        self.start_joint = pm.PyNode(start_joint)
+        self.end_joint = pm.PyNode(end_joint)
+        self.name = name
+        self.color = color
+        self.radius = radius
+        self.ctrl_shape = ctrl_shape
+
+        self.controls = []
+        self.ik_handle = None
+        
+        self.build()
+
+    def build(self):
+        self.ik_handle = pm.ikHandle(
+                startJoint = self.start_joint,
+                endEffector = self.end_joint,
+                name = self.name + '_%s' % IK_HANDLE,
+                sticky = 'sticky',
+                solver = 'ikSCsolver')[0]
+        self.ik_handle = pm.PyNode(self.ik_handle)
+        ctrl = Ctrl(xform = self.end_joint, normal=[0,1,0],
+                    name=self.name+'_%s'% CTRL,shape=self.ctrl_shape,
+                    radius=self.radius,group=True,color=self.color,
+                    lock=['rx','ry','rz']).ctrl
+        self.ik_handle.setParent(ctrl)
+        self.controls.append(ctrl)
+
+
+
 
 class IkSpline(object):
     def __init__(self, start_loc, end_loc, num_spans, num_joints,
@@ -369,7 +471,7 @@ class IkSpline(object):
 class ManDynHair(object):
     def __init__(self, curve, start_loc, end_loc, num_ctrls=3,
                  name='manDynHair', color=0, hair_system=None, 
-                 ctrl_radius=2):
+                 ctrl_radius=2,ctrl_shape=Ctrl.CIRCLE):
         self.curve_in = pm.PyNode(curve)
         self.start_loc = pm.PyNode(start_loc)
         self.end_loc = pm.PyNode(end_loc)
@@ -377,6 +479,7 @@ class ManDynHair(object):
         self.name = name
         self.color = color
         self.radius = ctrl_radius
+        self.ctrl_shape = ctrl_shape
 
         self.man_crv = None
         self.dyn_in_crv = None
@@ -405,7 +508,8 @@ class ManDynHair(object):
                 num_ctrls = self.num_ctrls,
                 name = self.name,
                 color = self.color,
-                radius = self.radius)
+                radius = self.radius,
+                ctrl_shape = self.ctrl_shape)
 
         self.driver_joints = linear_skin.drivers
         self.controls = linear_skin.controls
