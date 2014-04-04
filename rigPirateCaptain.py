@@ -2,12 +2,14 @@ import pymel.core as pm
 
 import blocks
 from blocks import RibbonIk, LinearSkin, Ctrl, ManDynHair, IkSpline, IkSC,\
-                   InlineOffset, place_xform, BIND, JOINT, IK
+                   InlineOffset
 import skin
 import utils 
+import defines
 reload(utils)
 reload(blocks)
 reload(skin)
+reload(defines)
 
 NAMESPACE = 'surface:model:'
 
@@ -343,7 +345,7 @@ def outer_tentacles(all_ctrl):
                 end_loc = attrs['end_loc'],
                 name = name + '_spline',
                 num_spans = 10,
-                num_joints = 10)
+                num_joints = 20)
         joints = [x.name() for x in spline.joints]
 
         print "Building ManDynHair for",name
@@ -396,12 +398,12 @@ def upper_bell(all_ctrl):
         name = loc.split('_')[0]
         loc = pm.PyNode(loc)
 
-        joint = place_xform(name=name+'_%s'%BIND, mtype='joint',
+        joint = utils.place_xform(name=name+'_%s'%defines.BIND, mtype='joint',
                             matrix=loc.getMatrix(worldSpace=True),
                             worldSpace=True)
         parent = attrs['parent']
         if parent:
-            parent = parent + '_%s' % BIND
+            parent = parent + '_%s' % defines.BIND
         joint.setParent(parent)
         ctrl = InlineOffset(joint, radius=10, ctrl_shape='circle',
                             color=attrs['color']).controls[0]
@@ -427,12 +429,13 @@ def lower_bell(all_ctrl):
         name = loc.split('_')[0]
         loc = pm.PyNode(loc)
                 
-        parent_joint = place_xform(name=name + '_%s' % BIND, mtype='joint',
-                                    matrix=loc.getMatrix(worldSpace=True),
-                                    worldSpace=True)
+        parent_joint = utils.place_xform(name=name + '_%s' % defines.BIND, 
+                                         mtype='joint',
+                                         matrix=loc.getMatrix(worldSpace=True),
+                                         worldSpace=True)
         parent = attrs['parent']
         if parent:
-            parent = parent + '_%s' % BIND
+            parent = parent + '_%s' % defines.BIND
         parent_joint.setParent(parent)
         parent_ctrl = InlineOffset(
                 parent_joint, radius=1,ctrl_shape='circle',
@@ -442,12 +445,13 @@ def lower_bell(all_ctrl):
         children = loc.listRelatives(children=True,type='transform')
         for endloc in children:
             endname = endloc.name().split('_')[0]
-            endjoint = place_xform(
-                    name=endname+'_%s'%BIND,mtype='joint',
+            endjoint = utils.place_xform(
+                    name=endname+'_%s'%defines.BIND,mtype='joint',
                     matrix=endloc.getMatrix(worldSpace=True),
                     worldSpace=True)
             ikjoint = pm.duplicate(
-                    parent_joint,name=endname+'_%s'%(IK+JOINT.title()),
+                    parent_joint,
+                    name=endname+'_%s'%(defines.IK+defines.JOINT.title()),
                     parentOnly=True)[0]
             ikjoint = pm.PyNode(ikjoint)
             ikjoint.setParent(parent_joint)

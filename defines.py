@@ -9,4 +9,16 @@ WORLD = None
 JSON_INDENT = 0
 
 ## Bind rig postfix
-BIND = '_bind'
+BIND = 'bind'
+FOLLICLE = 'follicle'
+JOINT = 'joint'
+CURVE = 'crv'
+WIRE = 'wire'
+DRVR = 'drvr%s' % (JOINT.title())
+CTRL = 'ctrl'
+BLENDSHAPE = 'bs'
+HAIR_SYS = 'hsys'
+PMA = 'pma'     # plus minus average
+IK_HANDLE = 'ikHandle'
+IK = 'ik'
+PLANE = 'plane'

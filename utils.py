@@ -2,6 +2,7 @@ import json
 
 import pymel.core as pm
 import defines
+reload(defines)
 
 #import soloBlock as sb
 #reload(sb)
@@ -183,7 +184,7 @@ def get_ws_location(node=None,mtype='transform'):
 
 ##  create pm objects for the given list of nodes
 #   @param nodes ('None') nodes to create objects for if None query selected
-def to_pm_nodes(nodes=None,mtype='transform'):
+def toPmNodes(nodes=None,mtype='transform'):
     if nodes == None:
         nodes = get_selected(mtype)
 
@@ -289,3 +290,87 @@ def distance(xforma, xformb):
     ax, ay, az = xforma.getTranslation(space='world')
     bx, by, bz = xformb.getTranslation(space='world')
     return ((ax-bx)**2 + (ay-by)**2 + (az-bz)**2)**0.5
+
+def place_joint(position,name='joint',parent=None):
+    joint = pm.joint(name=name, position=(0,0,0))
+    joint.setTranslation(position, 'world')
+    if parent:
+        pm.delete(pm.orientConstraint(parent,joint))
+    joint.setParent(parent)
+    return joint
+
+def place_joint_chain(start_loc, end_loc, num_joints=3, 
+                      parent=None, name='jointChain'):
+    joints = []
+    start_joint = place_joint(
+            get_ws_location(start_loc),
+            name = '%s%02d' % (name, 1),
+            parent = parent)
+    end_joint = place_joint(
+            get_ws_location(end_loc),
+            name = '%s%02d' % (name, num_joints),
+            parent = start_joint)
+    dist = end_joint.getTranslation()
+    dist = dist / float(num_joints-1)
+
+    joints.append(start_joint)
+    for i in range(2,num_joints):
+        inside_joint = pm.insertJoint(joints[-1])
+        inside_joint = to_pm_nodes(inside_joint)[0]
+        inside_joint = pm.rename(inside_joint,
+                                 '%s%02d' % (name, i))
+        inside_joint.translateBy(dist)
+        end_joint.translateBy(-dist)
+        joints.append(inside_joint)
+    joints.append(end_joint)
+
+    return joints
+
+
+def place_xform(name, mtype, matrix, parent=None, worldSpace=True):
+    pm.select(clear=True)
+
+    if mtype == 'joint':
+        xform = pm.joint(name=name)
+    elif mtype == 'group':
+        xform = pm.group(name=name, empty=True)
+    else:
+        xform = pm.spaceLocator(name=name)
+
+    if worldSpace:
+        xform.setMatrix(matrix,worldSpace=True)
+    else:
+        xform.setMatrix(matrix,objectSpace=True)
+
+    if parent:
+        xform.setParent(pm.PyNode(parent))
+    pm.makeIdentity(xform, apply=True)
+
+    return xform
+
+def place_xform_list(xform_list, worldSpace=True):
+    xforms = []
+    for xform in xform_list:
+        xf = place_xform(name=xform['name'], mtype=xform['type'],
+                         matrx=xform['matrix'],parent=xform['parent'],
+                         worldSpace=worldSpace)
+        xforms.append(xf)
+
+    return xforms
+
+def aim_normal(node, normal=[1,0,0]):
+    loc = pm.spaceLocator(name='tmp_aimNormal_loc')
+    loc.setTranslation(normal)
+    pm.delete(pm.aimConstraint(loc, node, aimVector=(0,1,0)))
+    pm.delete(loc)
+
+def makeNonRendering(node):
+    node.setAttr('castsShadows',0)
+    node.setAttr('receiveShadows',0)
+    node.setAttr('motionBlur',0)
+    node.setAttr('primaryVisibility',0)
+    node.setAttr('smoothShading',0)
+    node.setAttr('visibleInReflections',0)
+    node.setAttr('visibleInRefractions',0)
+
+    return node
