@@ -57,7 +57,7 @@ class Ctrl(object):
                 name=name,
                 degree=1,
                 worldSpace=True)
-        u.aim_normal(b, normal=normal)
+        u.aimNormal(b, normal=normal)
         pm.makeIdentity(b,apply=True)
         b.getShape().overrideEnabled.set(True)
         b.getShape().overrideColor.set(color)
@@ -85,7 +85,7 @@ class Ctrl(object):
                   (1*r, 0*r, 0)]
 
         a = pm.curve(point=points, name=name, degree=1, worldSpace=True)
-        u.aim_normal(a, normal=normal)
+        u.aimNormal(a, normal=normal)
         pm.makeIdentity(a,apply=True)
         a.getShape().overrideEnabled.set(True)
         a.getShape().overrideColor.set(color)
@@ -122,6 +122,8 @@ class Ctrl(object):
         if self.xform:
             pm.delete(pm.orientConstraint(self.xform,posObj))
             pm.delete(pm.pointConstraint(self.xform,posObj))
+
+        pm.makeIdentity(self.ctrl,apply=True)
         
         if type(self.lock) != list:
             self.lock = []
@@ -137,12 +139,14 @@ class Ctrl(object):
 class Block(object):
     '''Abstract Block base class'''
     def __init__(self, name, controlRadius=1.0, controlColor=1, 
-                 controlShape=Ctrl.CIRCLE, jointPostfix=d.BIND):
+                 controlShape=Ctrl.CIRCLE, jointPostfix=d.BIND, parent=None,
+                 **kwargs):
         self.name = name
         self.controlRadius = controlRadius
         self.controlColor = controlColor
         self.controlShape = controlShape
         self.jointPostfix = jointPostfix
+        self.parent = parent
 
         self.bindJoints = []
         self.controls = []
@@ -151,11 +155,14 @@ class Block(object):
         raise NotImplementedError
 
 class RibbonIk(Block):
-    '''defines a ribbon ik object'''
+    '''Joints equily positioned along the middle of a NURBS plane.
+
+    Useful for tails, tentacles and spines.
+    '''
 
     def __init__(self, startLoc, endLoc, numSpans, numJoints,
-                 name='ribbonIk',**kwargs):
-        super(RibbonIk,self).__init__(name=name, **kwargs)
+                 name='ribbonIk', **kwargs):
+        super(RibbonIk, self).__init__(name=name, **kwargs)
         self.startLoc = u.toPmNodes(startLoc)[0]
         self.endLoc = u.toPmNodes(endLoc)[0]
         self.numSpans = numSpans
@@ -165,7 +172,7 @@ class RibbonIk(Block):
 
         self.build()
 
-    def create_follicle(self,shape, posU=0.5, posV=0.5, name=d.FOLLICLE):
+    def createFollicle(self,shape, posU=0.5, posV=0.5, name=d.FOLLICLE):
         follicle = pm.createNode('follicle', name=name+'Shape')
         shape.local.connect(follicle.inputSurface)
         shape.worldMatrix[0].connect(follicle.inputWorldMatrix)
@@ -178,6 +185,7 @@ class RibbonIk(Block):
         follicle.getParent().r.lock()
         
         follicle.getParent().rename(name)
+
 
         return follicle.getParent()
 
@@ -219,6 +227,7 @@ class RibbonIk(Block):
                     posV = (i-1.0)/float(self.numJoints-1.0),
                     posU = 0.5, 
                     name = self.name + "_%s%02d" % (d.FOLLICLE,i))
+            pm.setAttr(follicle.visibility, False)
             follicles.append(follicle)
 
         self.follicleGrp = pm.group(follicles, name='%s_%s_grp' % \
@@ -229,17 +238,23 @@ class RibbonIk(Block):
         for i,f in enumerate(follicles):
             self.bindJoints.append(u.placeJoint(
                 position = u.getWsLocation(f),
-                name = '%s%s%02d_%s'%(self.name,d.JOINT.title(),i+1,d.BIND),
+                name = '%s%s%02d_%s'%(self.name, d.JOINT.title(),
+                                      i+1, self.jointPostfix),
                 parent = f))
 
-class InlineOffset(object):
-    def __init__(self, joints, controlShape=Ctrl.ARROWS4, **kwargs):
-        super(InlineOffset,self).__init__(controlShape=controlShape, **kwargs)
+        # parent
+        self.ribbonIkPlane.setParent(self.parent)
+
+class InlineOffset(Block):
+    '''Inserts control shapes into the scene hierarchy above the give jnts.
+    '''
+
+    def __init__(self, joints, name='offset', controlShape=Ctrl.ARROWS4,
+                 **kwargs):
+        super(InlineOffset,self).__init__(name=name,controlShape=controlShape,
+                                          **kwargs)
         if type(joints) != list:
             joints  = [joints]
-
-        for i in xrange(0,len(joints)):
-            joints[i] = u.toPmNodes(joints[i])
 
         self.joints = joints
 
@@ -249,31 +264,29 @@ class InlineOffset(object):
         for joint in self.joints:
             joint = pm.PyNode(joint)
             parent = joint.getParent()
-            ctrl   = Ctrl(
-                    xform = joint,
-                    name    = joint.name() + '_' + d.CTRL,
-                    shape   = self.ctrl_shape,
-                    radius  = self.radius,
-                    normal  = [0,1,0],
-                    color   = self.color,
-                    group   = False).ctrl
+            ctrl   = Ctrl(xform = joint,
+                          name = joint.name() + '_' + d.CTRL,
+                          shape = self.controlShape,
+                          radius = self.controlRadius,
+                          normal = [0,1,0],
+                          color = self.controlColor,
+                          group = False).ctrl
             ctrl.setParent(parent)
-            #pm.makeIdentity(ctrl, apply=True)
+            pm.makeIdentity(ctrl, apply=True)
             joint.setParent(ctrl)
             self.controls.append(ctrl)
 
-class LinearSkin(object):
-    def __init__(self, mesh, start_loc, end_loc, num_ctrls=3, name="ls",
-                 color=0, radius=2,ctrl_shape=Ctrl.CIRCLE):
-        #super(LinearSkin,self).__init__()
-        self.mesh_in = mesh
-        self.start_loc = start_loc
-        self.end_loc = end_loc
-        self.num_ctrls = num_ctrls
-        self.name = name
-        self.color = color
-        self.radius = radius
-        self.ctrl_shape = ctrl_shape
+class LinearSkin(Block):
+    '''Places a joint chain in the scene and skins the given mesh to it. 
+    '''
+    def __init__(self, mesh, startLoc, endLoc, numControls=3, name="ls",
+                 controlShape=Ctrl.CIRCLE, jointPostfix=d.DRVR, **kwargs):
+        super(LinearSkin,self).__init__(name=name, controlShape=controlShape,
+                                        jointPostfix=jointPostfix, **kwargs)
+        self.meshIn = mesh
+        self.startLoc = startLoc
+        self.endLoc = endLoc
+        self.numControls = numControls
 
         self.controls = []
         self.drivers = []
@@ -282,166 +295,168 @@ class LinearSkin(object):
         self.build()
 
     def build(self):
-        '''builds'''
         # place joints in the scene
-        self.drivers = u.place_joint_chain(
-                self.start_loc,
-                self.end_loc,
-                num_joints = self.num_ctrls,
+        self.drivers = u.placeJointChain(
+                self.startLoc,
+                self.endLoc,
+                numJoints = self.numControls,
                 parent = None,
-                name = '%s_%s' % (self.name, d.DRVR))
-        pm.delete(pm.orientConstraint(self.start_loc, self.drivers[0]))
+                name = '%s_%s' % (self.name, self.jointPostfix))
+        pm.delete(pm.orientConstraint(self.startLoc, self.drivers[0]))
 
         self.skin = pm.skinCluster(
-                self.drivers, self.mesh_in,
+                self.drivers, self.meshIn,
                 toSelectedBones = True,
-                maximumInfluences   = 2)
+                maximumInfluences = 2)
 
         self.controls = InlineOffset(
-                self.drivers,radius=self.radius,color=self.color,
-                ctrl_shape=self.ctrl_shape).controls
+                self.drivers, controlRadius=self.controlRadius, 
+                controlColor=self.controlColor, 
+                controlShape=self.controlShape).controls
 
-class IkSC(object):
-    def __init__(self, start_joint, end_joint, name=d.IK,color=0,
-                 radius=1,ctrl_shape=Ctrl.BOX):
-        self.start_joint = pm.PyNode(start_joint)
-        self.end_joint = pm.PyNode(end_joint)
-        self.name = name
-        self.color = color
-        self.radius = radius
-        self.ctrl_shape = ctrl_shape
+        self.controls[0].setParent(self.parent)
 
-        self.controls = []
-        self.ik_handle = None
+class IkSC(Block):
+    '''Makes an IK system (using Maya's SC solver).
+    '''
+    def __init__(self, startJoint, endJoint, name=d.IK, controlShape=Ctrl.BOX,
+                 **kwargs):
+        super(IkSC, self).__init__(name=name, controlShape=controlShape,
+                                   **kwargs)
+        self.startJoint = pm.PyNode(startJoint)
+        self.endJoint = pm.PyNode(endJoint)
+
+        self.ikHandle = None
         
         self.build()
 
     def build(self):
-        self.ik_handle = pm.ikHandle(
-                startJoint = self.start_joint,
-                endEffector = self.end_joint,
+        self.ikHandle = pm.ikHandle(
+                startJoint = self.startJoint,
+                endEffector = self.endJoint,
                 name = self.name + '_%s' % d.IK_HANDLE,
                 sticky = 'sticky',
                 solver = 'ikSCsolver')[0]
-        self.ik_handle = pm.PyNode(self.ik_handle)
-        ctrl = Ctrl(xform = self.end_joint, normal=[0,1,0],
-                    name=self.name+'_%s'% d.CTRL,shape=self.ctrl_shape,
-                    radius=self.radius,group=True,color=self.color,
-                    lock=['rx','ry','rz']).ctrl
-        self.ik_handle.setParent(ctrl)
+        self.ikHandle = pm.PyNode(self.ikHandle)
+        ctrl = Ctrl(xform = self.endJoint, normal=[0,1,0],
+                    name=self.name+'_%s'% d.CTRL, shape=self.controlShape, 
+                    radius=self.controlRadius, group=True, 
+                    color=self.controlColor, lock=['rx','ry','rz']).ctrl
+        self.ikHandle.setParent(ctrl)
         self.controls.append(ctrl)
 
 
 
 
-class IkSpline(object):
-    def __init__(self, start_loc, end_loc, num_spans, num_joints,
-                 name='ikSpline'):
-        object.__init__(self)
-        self.start_loc = start_loc
-        self.end_loc = end_loc
-        self.num_spans = num_spans
-        self.num_joints = num_joints
+class IkSpline(Block):
+    '''Places a joint chain in the scene and applies an IK spline system.
+    '''
+    def __init__(self, startLoc, endLoc, numSpans, numJoints,
+                 name='ikSpline', **kwargs):
+        super(IkSpline, self).__init__(name=name, **kwargs)
+        self.startLoc = startLoc
+        self.endLoc = endLoc
+        self.numSpans = numSpans
+        self.numJoints = numJoints
         self.name = name
 
         self.joints = []
-        self.ik_crv = None
-        self.ik_handle = None
-        self.ik_effector = None
+        self.ikCrv = None
+        self.ikHandle = None
+        self.ikEffector = None
 
         self.build()
 
     def build(self):
-        self.joints = u.place_joint_chain(
-                start_loc = self.start_loc,
-                end_loc = self.end_loc,
-                num_joints = self.num_joints,
+        self.joints = u.placeJointChain(
+                startLoc = self.startLoc,
+                endLoc = self.endLoc,
+                numJoints = self.numJoints,
                 parent = None, 
                 name = self.name)
         self.joints[0].setAttr('visibility', False)
         
-        self.ik_handle, self.ik_effector, self.ik_crv = pm.ikHandle(
+        self.ikHandle, self.ikEffector, self.ikCrv = pm.ikHandle(
                 startJoint = self.joints[0],
                 endEffector = self.joints[-1],
                 name = self.name + '_' + d.IK_HANDLE,
                 solver = 'ikSplineSolver')
-        self.ik_crv = pm.PyNode(self.ik_crv)
-        self.ik_handle = pm.PyNode(self.ik_handle)
+        self.ikCrv = pm.PyNode(self.ikCrv)
+        self.ikHandle = pm.PyNode(self.ikHandle)
 
-        self.ik_handle.inheritsTranform = False
-        self.ik_handle.setAttr('visibility',False)
+        self.ikHandle.inheritsTranform = False
+        self.ikHandle.setAttr('visibility',False)
 
-        self.ik_crv.rename(self.name + '_crv')
-        self.ik_crv.setAttr('visibility',False)
+        self.ikCrv.rename(self.name + '_' + d.CURVE)
+        self.ikCrv.setAttr('visibility',False)
 
-        pm.rebuildCurve(self.ik_crv,
+        pm.rebuildCurve(self.ikCrv,
                 degree = 3,
-                spans = self.num_spans,
+                spans = self.numSpans,
                 keepRange = 0,
-                constructionHistory=False)
+                constructionHistory = False)
 
-class ManDynHair(object):
-    def __init__(self, curve, start_loc, end_loc, num_ctrls=3,
-                 name='manDynHair', color=0, hair_system=None, 
-                 ctrl_radius=2,ctrl_shape=Ctrl.CIRCLE):
-        self.curve_in = pm.PyNode(curve)
-        self.start_loc = pm.PyNode(start_loc)
-        self.end_loc = pm.PyNode(end_loc)
-        self.num_ctrls = num_ctrls
-        self.name = name
-        self.color = color
-        self.radius = ctrl_radius
-        self.ctrl_shape = ctrl_shape
+class ManDynHair(Block):
+    '''Creates a system to blend between manual and dynamic ctrl of a crv.
+    '''
+    def __init__(self, curve, startLoc, endLoc, numControls=3,
+                 name='manDynHair', hairSystem=None, 
+                 controlRadius=2, **kwargs):
+        super(ManDynHair, self).__init__(name=name, controlRadius=controlRadius,
+                                         **kwargs)
+        self.curveIn = pm.PyNode(curve)
+        self.startLoc = pm.PyNode(startLoc)
+        self.endLoc = pm.PyNode(endLoc)
+        self.numControls = numControls
 
-        self.man_crv = None
-        self.dyn_in_crv = None
-        self.dyn_out_crv = None
-        self.man_dyn_bs = None
-        self.shape_bs = None
-        self.driver_joints = []
-        self.controls = []
-        self.hair_system = hair_system
+        self.manCrv = None
+        self.dynInCrv = None
+        self.dynOutCrv = None
+        self.manDynBs = None
+        self.shapeBs = None
+        self.driverJoints = []
+        self.hairSystem = hairSystem
         self.follicle = None
 
         self.build()
 
     def build(self):
-        self.curve_in.setAttr('inheritsTransform',False)
+        self.curveIn.setAttr('inheritsTransform',False)
         # create a crv and ctrls to act as a manual driver for the sys
-        self.man_crv = pm.duplicate(self.curve_in,returnRootsOnly=True, 
+        self.manCrv = pm.duplicate(self.curveIn, returnRootsOnly=True, 
                                     name = '%s_man_%s' % (self.name,d.CURVE))
-        self.man_crv[0].inheritsTransform = False
-        self.man_crv[0].setAttr('visibility',False)
+        self.manCrv[0].inheritsTransform = False
+        self.manCrv[0].setAttr('visibility',False)
 
-        linear_skin = LinearSkin(
-                mesh = self.man_crv, 
-                start_loc = self.start_loc,
-                end_loc = self.end_loc,
-                num_ctrls = self.num_ctrls,
+        linearSkin = LinearSkin(
+                mesh = self.manCrv, 
+                startLoc = self.startLoc,
+                endLoc = self.endLoc,
+                numControls = self.numControls,
                 name = self.name,
-                color = self.color,
-                radius = self.radius,
-                ctrl_shape = self.ctrl_shape)
+                controlColor = self.controlColor,
+                controlRadius = self.controlRadius,
+                controlShape = self.controlShape)
 
-        self.driver_joints = linear_skin.drivers
-        self.controls = linear_skin.controls
+        self.driverJoints = linearSkin.drivers
+        self.controls = linearSkin.controls
 
-        self.dyn_in_crv = pm.duplicate(self.man_crv,returnRootsOnly=1,
-                                       name = '%s_dynIn_%s' % (self.name,
-                                                               d.CURVE))[0]
-        self.dyn_in_crv.setAttr('visibility',False)
+        self.dynInCrv = pm.duplicate(self.manCrv,returnRootsOnly=1,
+                                     name = '%s_dynIn_%s' % (self.name,
+                                                             d.CURVE))[0]
+        self.dynInCrv.setAttr('visibility',False)
         # drive the dynmanic input curve with the manual curve
-        self.shape_bs = pm.blendShape(self.man_crv, self.dyn_in_crv,
-                                      name = '%s_shape_%s' % (self.name,
-                                                              d.BLENDSHAPE))
-        pm.blendShape(self.shape_bs, edit=True, weight=[(0,1)])
+        self.shapeBs = pm.blendShape(self.manCrv, self.dynInCrv,
+                                     name = '%s_shape_%s' % (self.name,
+                                                             d.BLENDSHAPE))
+        pm.blendShape(self.shapeBs, edit=True, weight=[(0,1)])
         
         # make a dynamic curve that is driven by a hairSystem
-        self.dyn_out_crv = pm.duplicate(
-                self.dyn_in_crv, returnRootsOnly=1,
+        self.dynOutCrv = pm.duplicate(
+                self.dynInCrv, returnRootsOnly=1,
                 name = '%s_dynOut_%s' % (self.name, d.CURVE))[0]
-        self.dyn_out_crv.inheritsTransform = False
-        self.dyn_out_crv.setAttr('visibility',False)
+        self.dynOutCrv.inheritsTransform = False
+        self.dynOutCrv.setAttr('visibility',False)
         self.follicle = pm.createNode('follicle', skipSelect=1, 
                                       name = '%s_%sShape' % (
                                           self.name,d.FOLLICLE))
@@ -450,34 +465,34 @@ class ManDynHair(object):
         self.follicle.setAttr('visibility',False)
         self.follicle.restPose.set(1)
         
-        if self.hair_system == None or not pm.objExists(self.hair_system):
-            self.hair_system = pm.createNode(
+        if self.hairSystem == None or not pm.objExists(self.hairSystem):
+            self.hairSystem = pm.createNode(
                     'hairSystem', skipSelect=1,
                     name='%s_%sShape' % (self.name,d.HAIR_SYS))
-            self.hair_system = pm.rename(self.hair_system.getParent(),
+            self.hairSystem = pm.rename(self.hairSystem.getParent(),
                                          '%s_%s' % (self.name,d.HAIR_SYS))
             pm.PyNode('time1').outTime >> \
-                    self.hair_system.getShape().currentTime
-            self.hair_system.setAttr('visibility',False)
+                    self.hairSystem.getShape().currentTime
+            self.hairSystem.setAttr('visibility',False)
 
-        hair_system = pm.PyNode(self.hair_system)
-        hair_index=len(hair_system.getShape().inputHair.listConnections())
+        hairSystem = pm.PyNode(self.hairSystem)
+        hairIndex=len(hairSystem.getShape().inputHair.listConnections())
 
-        pm.parent(self.dyn_in_crv, self.follicle)
-        self.dyn_in_crv.getShape().worldSpace[0] >> \
+        pm.parent(self.dynInCrv, self.follicle)
+        self.dynInCrv.getShape().worldSpace[0] >> \
                 self.follicle.getShape().startPosition
         self.follicle.getShape().outCurve >> \
-                self.dyn_out_crv.getShape().create
+                self.dynOutCrv.getShape().create
         self.follicle.getShape().outHair >> \
-                hair_system.getShape().inputHair[hair_index]
-        hair_system.getShape().outputHair[hair_index] >> \
+                hairSystem.getShape().inputHair[hairIndex]
+        hairSystem.getShape().outputHair[hairIndex] >> \
                 self.follicle.getShape().currentPosition
 
 
         # drive the input curve with a blendshape to blend btwn 
         # the manual and dynmanic curves
-        self.man_dyn_bs = pm.blendShape(
-                self.man_crv, self.dyn_out_crv, self.curve_in, 
+        self.manDynBs = pm.blendShape(
+                self.manCrv, self.dynOutCrv, self.curveIn, 
                 name='%s_manDyn_%s' % (self.name, d.BLENDSHAPE))[0]
 
         pm.addAttr(self.controls[0],
@@ -489,6 +504,31 @@ class ManDynHair(object):
         pma.setAttr('operation','Subtract')
         pma.setAttr('input1D[0]',1)
 
-        self.controls[0].manDynBlend >> self.man_dyn_bs.weight[1]
+        self.controls[0].manDynBlend >> self.manDynBs.weight[1]
         self.controls[0].manDynBlend >> pma.input1D[1]
-        pma.output1D >> self.man_dyn_bs.weight[0]
+        pma.output1D >> self.manDynBs.weight[0]
+
+
+class Lattice(Block):
+    '''Creates a lattice around a given vertices.
+    '''
+
+    def __init__(self, geometry, latticeDivisions=[5,5,5], name='lattice', 
+                 **kwargs):
+        super(Lattice,self).__init__(name=name, **kwargs)
+        self.geometry = geometry
+        self.latticeDivisions = latticeDivisions
+
+        self.lattice = None
+
+        self.build()
+
+        
+    def build(self):
+        pm.select(clear=True)
+        pm.select(self.geometry)
+        self.lattice = pm.nt.Lattice(objectCentered = True, 
+                                     divisions = self.latticeDivisions,
+                                     frontOfChain = True,
+                                     name = self.name)
+        self.lattice.getParent().setParent(self.parent)

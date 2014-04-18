@@ -2,12 +2,12 @@ import pymel.core as pm
 
 import blocks
 from blocks import RibbonIk, LinearSkin, Ctrl, ManDynHair, IkSpline, IkSC,\
-                   InlineOffset
+                   InlineOffset, Lattice
 import skin
 import utils 
 import defines
 reload(utils)
-reload(blocks)
+#reload(blocks)
 reload(skin)
 reload(defines)
 
@@ -18,14 +18,15 @@ NAMESPACE = 'surface:model:'
 #
 loc_shapes = pm.ls(exactType='locator')
 locs = [x.getParent() for x in pm.ls(exactType='locator')]
-json = [utils.gen_node_entry(x) for x in locs]
-utils.write_file('rigPirateCaptain_locs.json',json)
+json = [utils.genNodeEntry(x) for x in locs]
+utils.writeFile('rigPirateCaptain_locs.json',json)
 
 
 ctrls = []
-all_ctrl = None
+allCtrl = None
+root = None
 
-skin_dict = {
+skinDict = {
         # namespace:{
         #   SMOOTH:{mesh:[joints,],},
         #   RIGID:{joint:[meshes,],}, }
@@ -37,300 +38,358 @@ skin_dict = {
         }#skin_dict
 
 
-innerTentacle_locs = [
+innerTentacleLocs = [
         {'tentacleR1_ring_grp_0001':{
             'start_loc':'tentacleR1_ring_grp_0001_top_loc',
             'end_loc':'tentacleR1_ring_grp_0001_bottom_loc',
-            'color':Ctrl.BLUE,}},
+            'color':Ctrl.BLUE,
+            'parent':'m_root_bind',}},
         {'tentacleR1_ring_grp_0002':{
             'start_loc':'tentacleR1_ring_grp_0002_top_loc',
             'end_loc':'tentacleR1_ring_grp_0002_bottom_loc',
-            'color':Ctrl.RED,}},
+            'color':Ctrl.RED,
+            'parent':'m_root_bind',}},
         {'tentacleR1_grp_0003':{
             'start_loc':'tentacleR1_grp_0003_top_loc',
             'end_loc':'tentacleR1_grp_0003_bottom_loc',
-            'color':Ctrl.RED,}},
+            'color':Ctrl.RED,
+            'parent':'m_root_bind',}},
         {'tentacleR1_grp_0004':{
             'start_loc':'tentacleR1_grp_0004_top_loc',
             'end_loc':'tentacleR1_grp_0004_bottom_loc',
-            'color':Ctrl.BLUE,}},
+            'color':Ctrl.BLUE,
+            'parent':'m_root_bind',}},
         {'ringTentacleR2_grp_0001':{
             'start_loc':'ringTentacleR2_grp_0001_top_loc',
             'end_loc':'ringTentacleR2_grp_0001_bottom_loc',
-            'color':Ctrl.RED,}},
+            'color':Ctrl.RED,
+            'parent':'m_root_bind',}},
         {'ringTentacleR2_grp_0002':{
             'start_loc':'ringTentacleR2_grp_0002_top_loc',
             'end_loc':'ringTentacleR2_grp_0002_bottom_loc',
-            'color':Ctrl.BLUE,}},
+            'color':Ctrl.BLUE,
+            'parent':'m_root_bind',}},
         {'tentacleR3_grp_0001':{
             'start_loc':'tentacleR3_grp_0001_top_loc',
             'end_loc':'tentacleR3_grp_0001_bottom_loc',
-            'color':Ctrl.YELLOW,}},
+            'color':Ctrl.YELLOW,
+            'parent':'m_root_bind',}},
         {'tentacleR3_grp_0002':{
             'start_loc':'tentacleR3_grp_0002_top_loc',
             'end_loc':'tentacleR3_grp_0002_bottom_loc',
-            'color':Ctrl.BLUE,}},
+            'color':Ctrl.BLUE,
+            'parent':'m_root_bind',}},
         {'tentacleR3_grp_0003':{
             'start_loc':'tentacleR3_grp_0003_top_loc',
             'end_loc':'tentacleR3_grp_0003_bottom_loc',
-            'color':Ctrl.RED,}},
+            'color':Ctrl.RED,
+            'parent':'m_root_bind',}},
         ]
 
-outerTentacle_locs = [
-        # S3
-        {'outerTentacleS3_0001':{
-            'start_loc':'outerTentacleS3_0001_top_loc',
-            'end_loc':'outerTentacleS3_0001_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS3_0002':{
-            'start_loc':'outerTentacleS3_0002_top_loc',
-            'end_loc':'outerTentacleS3_0002_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS3_0003':{
-            'start_loc':'outerTentacleS3_0003_top_loc',
-            'end_loc':'outerTentacleS3_0003_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS3_0004':{
-            'start_loc':'outerTentacleS3_0004_top_loc',
-            'end_loc':'outerTentacleS3_0004_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS3_0005':{
-            'start_loc':'outerTentacleS3_0005_top_loc',
-            'end_loc':'outerTentacleS3_0005_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS3_0006':{
-            'start_loc':'outerTentacleS3_0006_top_loc',
-            'end_loc':'outerTentacleS3_0006_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS3_0007':{
-            'start_loc':'outerTentacleS3_0007_top_loc',
-            'end_loc':'outerTentacleS3_0007_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS3_0008':{
-            'start_loc':'outerTentacleS3_0008_top_loc',
-            'end_loc':'outerTentacleS3_0008_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS3_0009':{
-            'start_loc':'outerTentacleS3_0009_top_loc',
-            'end_loc':'outerTentacleS3_0009_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        # S2
-        {'outerTentacleS2_0001':{
-            'start_loc':'outerTentacleS2_0001_top_loc',
-            'end_loc':'outerTentacleS2_0001_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0006':{
-            'start_loc':'outerTentacleS2_0006_top_loc',
-            'end_loc':'outerTentacleS2_0006_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS2_0007':{
-            'start_loc':'outerTentacleS2_0007_top_loc',
-            'end_loc':'outerTentacleS2_0007_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0008':{
-            'start_loc':'outerTentacleS2_0008_top_loc',
-            'end_loc':'outerTentacleS2_0008_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0009':{
-            'start_loc':'outerTentacleS2_0009_top_loc',
-            'end_loc':'outerTentacleS2_0009_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0010':{
-            'start_loc':'outerTentacleS2_0010_top_loc',
-            'end_loc':'outerTentacleS2_0010_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0011':{
-            'start_loc':'outerTentacleS2_0011_top_loc',
-            'end_loc':'outerTentacleS2_0011_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0012':{
-            'start_loc':'outerTentacleS2_0012_top_loc',
-            'end_loc':'outerTentacleS2_0012_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS2_0013':{
-            'start_loc':'outerTentacleS2_0013_top_loc',
-            'end_loc':'outerTentacleS2_0013_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS2_0014':{
-            'start_loc':'outerTentacleS2_0014_top_loc',
-            'end_loc':'outerTentacleS2_0014_bottom_loc',
-            'color':Ctrl.NAVY,
-            'parent':None,}},
-        {'outerTentacleS2_0015':{
-            'start_loc':'outerTentacleS2_0015_top_loc',
-            'end_loc':'outerTentacleS2_0015_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS2_0016':{
-            'start_loc':'outerTentacleS2_0016_top_loc',
-            'end_loc':'outerTentacleS2_0016_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
-        {'outerTentacleS2_0017':{
-            'start_loc':'outerTentacleS2_0017_top_loc',
-            'end_loc':'outerTentacleS2_0017_bottom_loc',
-            'color':Ctrl.BRICK,
-            'parent':None,}},
+outerTentacleLocs = [
         # S1
         {'outerTentacleS1_0001':{
             'start_loc':'outerTentacleS1_0001_top_loc',
             'end_loc':'outerTentacleS1_0001_bottom_loc',
             'color':Ctrl.NAVY,
-            'parent':None,}},
+            'parent':'lowerBellEnd06_bind',}},
         {'outerTentacleS1_0002':{
             'start_loc':'outerTentacleS1_0002_top_loc',
             'end_loc':'outerTentacleS1_0002_bottom_loc',
             'color':Ctrl.BRICK,
-            'parent':None,}},
+            'parent':'lowerBellEnd11_bind',}},
         {'outerTentacleS1_0003':{
             'start_loc':'outerTentacleS1_0003_top_loc',
             'end_loc':'outerTentacleS1_0003_bottom_loc',
             'color':Ctrl.NAVY,
-            'parent':None,}},
+            'parent':'lowerBellEnd03_bind',}},
         {'outerTentacleS1_0004':{
             'start_loc':'outerTentacleS1_0004_top_loc',
             'end_loc':'outerTentacleS1_0004_bottom_loc',
             'color':Ctrl.NAVY,
-            'parent':None,}},
+            'parent':'lowerBellEnd30_bind',}},
         {'outerTentacleS1_0005':{
             'start_loc':'outerTentacleS1_0005_top_loc',
             'end_loc':'outerTentacleS1_0005_bottom_loc',
             'color':Ctrl.NAVY,
-            'parent':None,}},
+            'parent':'lowerBellEnd26_bind',}},
         {'outerTentacleS1_0006':{
             'start_loc':'outerTentacleS1_0006_top_loc',
             'end_loc':'outerTentacleS1_0006_bottom_loc',
             'color':Ctrl.BRICK,
-            'parent':None,}},
+            'parent':'lowerBellEnd13_bind',}},
         {'outerTentacleS1_0007':{
             'start_loc':'outerTentacleS1_0007_top_loc',
             'end_loc':'outerTentacleS1_0007_bottom_loc',
             'color':Ctrl.BRICK,
-            'parent':None,}},
+            'parent':'lowerBellEnd22_bind',}},
         {'outerTentacleS1_0008':{
             'start_loc':'outerTentacleS1_0008_top_loc',
             'end_loc':'outerTentacleS1_0008_bottom_loc',
             'color':Ctrl.BRICK,
-            'parent':None,}},
+            'parent':'lowerBellEnd16_bind',}},
+        # S2
+        {'outerTentacleS2_0001':{
+            'start_loc':'outerTentacleS2_0001_top_loc',
+            'end_loc':'outerTentacleS2_0001_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd04_bind',}},
+        {'outerTentacleS2_0006':{
+            'start_loc':'outerTentacleS2_0006_top_loc',
+            'end_loc':'outerTentacleS2_0006_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd09_bind',}},
+        {'outerTentacleS2_0007':{
+            'start_loc':'outerTentacleS2_0007_top_loc',
+            'end_loc':'outerTentacleS2_0007_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd05_bind',}},
+        {'outerTentacleS2_0008':{
+            'start_loc':'outerTentacleS2_0008_top_loc',
+            'end_loc':'outerTentacleS2_0008_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd07_bind',}},
+        {'outerTentacleS2_0009':{
+            'start_loc':'outerTentacleS2_0009_top_loc',
+            'end_loc':'outerTentacleS2_0009_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd02_bind',}},
+        {'outerTentacleS2_0010':{
+            'start_loc':'outerTentacleS2_0010_top_loc',
+            'end_loc':'outerTentacleS2_0010_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd29_bind',}},
+        {'outerTentacleS2_0011':{
+            'start_loc':'outerTentacleS2_0011_top_loc',
+            'end_loc':'outerTentacleS2_0011_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd27_bind',}},
+        {'outerTentacleS2_0012':{
+            'start_loc':'outerTentacleS2_0012_top_loc',
+            'end_loc':'outerTentacleS2_0012_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd13_bind',}},
+        {'outerTentacleS2_0013':{
+            'start_loc':'outerTentacleS2_0013_top_loc',
+            'end_loc':'outerTentacleS2_0013_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd11_bind',}},
+        {'outerTentacleS2_0014':{
+            'start_loc':'outerTentacleS2_0014_top_loc',
+            'end_loc':'outerTentacleS2_0014_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd24_bind',}},
+        {'outerTentacleS2_0015':{
+            'start_loc':'outerTentacleS2_0015_top_loc',
+            'end_loc':'outerTentacleS2_0015_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd21_bind',}},
+        {'outerTentacleS2_0016':{
+            'start_loc':'outerTentacleS2_0016_top_loc',
+            'end_loc':'outerTentacleS2_0016_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd19_bind',}},
+        {'outerTentacleS2_0017':{
+            'start_loc':'outerTentacleS2_0017_top_loc',
+            'end_loc':'outerTentacleS2_0017_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd15_bind',}},
+        # S3
+        {'outerTentacleS3_0001':{
+            'start_loc':'outerTentacleS3_0001_top_loc',
+            'end_loc':'outerTentacleS3_0001_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd01_bind',}},
+        {'outerTentacleS3_0002':{
+            'start_loc':'outerTentacleS3_0002_top_loc',
+            'end_loc':'outerTentacleS3_0002_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd08_bind',}},
+        {'outerTentacleS3_0003':{
+            'start_loc':'outerTentacleS3_0003_top_loc',
+            'end_loc':'outerTentacleS3_0003_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd10_bind',}},
+        {'outerTentacleS3_0004':{
+            'start_loc':'outerTentacleS3_0004_top_loc',
+            'end_loc':'outerTentacleS3_0004_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd28_bind',}},
+        {'outerTentacleS3_0005':{
+            'start_loc':'outerTentacleS3_0005_top_loc',
+            'end_loc':'outerTentacleS3_0005_bottom_loc',
+            'color':Ctrl.NAVY,
+            'parent':'lowerBellEnd25_bind',}},
+        {'outerTentacleS3_0006':{
+            'start_loc':'outerTentacleS3_0006_top_loc',
+            'end_loc':'outerTentacleS3_0006_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd14_bind',}},
+        {'outerTentacleS3_0007':{
+            'start_loc':'outerTentacleS3_0007_top_loc',
+            'end_loc':'outerTentacleS3_0007_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd23_bind',}},
+        {'outerTentacleS3_0008':{
+            'start_loc':'outerTentacleS3_0008_top_loc',
+            'end_loc':'outerTentacleS3_0008_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd20_bind',}},
+        {'outerTentacleS3_0009':{
+            'start_loc':'outerTentacleS3_0009_top_loc',
+            'end_loc':'outerTentacleS3_0009_bottom_loc',
+            'color':Ctrl.BRICK,
+            'parent':'lowerBellEnd17_bind',}},
         ]
-lowerBell_locs = [
+lowerBellLocs = [
         {'lowerBell01_loc':{
             'color':Ctrl.BLUE,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell02_loc':{
             'color':Ctrl.BLUE,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell03_loc':{
             'color':Ctrl.BLUE,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell04_loc':{
             'color':Ctrl.YELLOW,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell05_loc':{
             'color':Ctrl.RED,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell06_loc':{
             'color':Ctrl.RED,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell07_loc':{
             'color':Ctrl.RED,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell08_loc':{
             'color':Ctrl.RED,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell09_loc':{
             'color':Ctrl.RED,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell10_loc':{
             'color':Ctrl.YELLOW,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell11_loc':{
             'color':Ctrl.BLUE,
-            'parent':'root',}},
+            'parent':'m_root',}},
         {'lowerBell12_loc':{
             'color':Ctrl.BLUE,
-            'parent':'root',}},
+            'parent':'m_root',}},
         ]
-upperBell_locs = [
-        {'root_loc':{
-            'color':Ctrl.YELLOW,
-            'parent':None,}},
+upperBellLocs = [
+        # {'root_loc':{
+        #     'color':Ctrl.YELLOW,
+        #     'parent':None,}},
         {'upperBell_loc':{
             'color':Ctrl.YELLOW,
-            'parent':'root',}}
+            'parent':'m_root_bind',}},
         ]
+upperBellVerts = [
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[0:421]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[426:431]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[433:434]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[436:437]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[439:442]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[444:445]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[458:461]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[474:477]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[480:481]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[483:486]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[488:489]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[491:492]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[494:496]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[498]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[511:514]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[524:526]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[528:530]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[532:535]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[537:543]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[545:547]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[549:553]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[555:559]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[561:563]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[585:595]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[620:633]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[636:638]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[640:644]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[646:650]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[652:654]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[656:660]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[662:666]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[668:669]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[694:705]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[727:750]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[760:765]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[778:801]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[814:821]'), 
+    pm.MeshVertex(u'surface:model:headDomeShape.vtx[834:841]')
+    ]
 
-def inner_tentacles(all_ctrl):
-    innerTentacle_ctrls = []
-    pm.addAttr(all_ctrl, longName='innerTentacleGeo',
+upperBellGeo = [
+    pm.nt.Transform(u'surface:model:innerDome'),
+    pm.nt.Transform(u'surface:model:headDome'),
+    ]
+
+
+def innerTentacles(allCtrl, rootCtrl):
+    innerTentacleCtrls = []
+    pm.addAttr(allCtrl, longName='innerTentacleGeo',
                attributeType='bool', defaultValue=True, keyable=True)
-    for dict_ in innerTentacle_locs:
+    pm.addAttr(allCtrl, longName='innerTentacleCtrls',
+               attributeType='bool', defaultValue=True, keyable=True)
+    for dict_ in innerTentacleLocs:
         group = dict_.keys()[0]
         attrs = dict_.values()[0]
 
-        mesh_name  = group.split('_')
-        name   = mesh_name[0] + mesh_name[-1]
+        meshName = group.split('_')
+        name = meshName[0] + meshName[-1]
         print "Building RibbonIK for", name
         ribbon = RibbonIk(
-                start_loc = attrs['start_loc'], 
-                end_loc   = attrs['end_loc'],
-                name      = name + "_ribbonIk",
-                num_spans = 9,
-                num_joints= 20)
+                startLoc = attrs['start_loc'], 
+                endLoc = attrs['end_loc'],
+                name = name + "_ribbonIk",
+                numSpans = 9,
+                numJoints = 20)
         print "Building Driver for", name
         drivers = LinearSkin(
                 mesh = ribbon.ribbonIkPlane,
-                start_loc = attrs['start_loc'], 
-                end_loc   = attrs['end_loc'],
-                num_ctrls = 6,
+                startLoc = attrs['start_loc'], 
+                endLoc = attrs['end_loc'],
+                numControls = 6,
                 name = name,
-                color     = attrs['color'])
-        innerTentacle_ctrls.extend(drivers.controls)
+                controlColor = attrs['color'],
+                parent = attrs['parent'])
+        innerTentacleCtrls.extend(drivers.controls)
 
-        geo_grp = "%s%s" % (NAMESPACE,group)
-        geo = pm.listRelatives(geo_grp, children=True, path=True)
-        joints = [x.name() for x in ribbon.bind_joints]
+        geoGrp = "%s%s" % (NAMESPACE,group)
+        geo = pm.listRelatives(geoGrp, children=True, path=True)
+        joints = [x.name() for x in ribbon.bindJoints]
         for node in geo:
-            skin_dict[NAMESPACE][skin.SMOOTH].update(
+            skinDict[NAMESPACE][skin.SMOOTH].update(
                     {node.name():joints})
-        ctrl_grp = pm.group(ribbon.ribbonIkPlane, 
+        ctrlGrp = pm.group(ribbon.ribbonIkPlane, 
                             drivers.controls[0], name='%s_ctrlGrp' % group)
-        ribbon.follicle_grp.setParent(ctrl_grp)
-        ctrl_grp.setParent(all_ctrl)
-        all_ctrl.innerTentacleGeo >> pm.PyNode(NAMESPACE+group).visibility
+        ribbon.follicleGrp.setParent(ctrlGrp)
+        ctrlGrp.setParent(rootCtrl.controls[0])
+        allCtrl.innerTentacleGeo >> pm.PyNode(NAMESPACE+group).visibility
+        for joint in ribbon.bindJoints:
+            allCtrl.innerTentacleCtrls >> joint.visibility
 
-    pm.addAttr(all_ctrl, longName='innerTentacleCtrls',
+    for ctrl in innerTentacleCtrls:
+        allCtrl.innerTentacleCtrls >> ctrl.visibility
+
+    ctrls.extend(innerTentacleCtrls)
+    pm.sets(innerTentacleCtrls,name="innerTentacleCtrls")
+
+def outerTentacles(allCtrl):
+    pm.addAttr(allCtrl, longName='outerTentacleGeo',
                attributeType='bool', defaultValue=True, keyable=True)
-    for ctrl in innerTentacle_ctrls:
-        all_ctrl.innerTentacleCtrls >> ctrl.visibility
-
-    ctrls.extend(innerTentacle_ctrls)
-    pm.sets(innerTentacle_ctrls,name="innerTentacleCtrls")
-
-def outer_tentacles(all_ctrl):
-    pm.addAttr(all_ctrl, longName='outerTentacleGeo',
-               attributeType='bool', defaultValue=True, keyable=True)
-    hair_sys = None
-    outerTentacle_ctrls = []
-    for dict_ in outerTentacle_locs:
+    hairSys = None
+    outerTentacleCtrls = []
+    for dict_ in outerTentacleLocs:
         # get the names
         mesh = dict_.keys()[0]
         attrs = dict_.values()[0]
@@ -341,178 +400,226 @@ def outer_tentacles(all_ctrl):
         # build the rig
         print "Building Spline for",name
         spline = IkSpline(
-                start_loc = attrs['start_loc'],
-                end_loc = attrs['end_loc'],
+                startLoc = attrs['start_loc'],
+                endLoc = attrs['end_loc'],
                 name = name + '_spline',
-                num_spans = 10,
-                num_joints = 20)
+                numSpans = 10,
+                numJoints = 20)
         joints = [x.name() for x in spline.joints]
 
         print "Building ManDynHair for",name
         mdhair = ManDynHair(
-                curve = spline.ik_crv,
-                start_loc = spline.start_loc,
-                end_loc = spline.end_loc,
-                num_ctrls = 5,
+                curve = spline.ikCrv,
+                startLoc = spline.startLoc,
+                endLoc = spline.endLoc,
+                numControls = 5,
                 name = name,
-                color = attrs['color'],
-                hair_system = hair_sys,
-                ctrl_radius = 1)
-        hair_sys = mdhair.hair_system
+                controlColor = attrs['color'],
+                hairSystem = hairSys,
+                controlRadius = 1)
+        hairSys = mdhair.hairSystem
 
-        outerTentacle_ctrls.extend(mdhair.controls)
+        outerTentacleCtrls.extend(mdhair.controls)
 
         # update the skinning dict
         mesh = NAMESPACE + mesh
-        skin_dict[NAMESPACE][skin.SMOOTH].update(
+        skinDict[NAMESPACE][skin.SMOOTH].update(
                 {mesh:joints})
 
         # set geo.visibility to ctrl.visibiltiy
         mdhair.controls[0].visibility >> pm.PyNode(mesh).visibility
 
         # group everything together
-        ctrl_grp = pm.group(
-                spline.joints[0],spline.ik_crv, spline.ik_handle,
-                mdhair.man_crv, mdhair.dyn_out_crv, mdhair.controls[0],
+        ctrlGrp = pm.group(
+                spline.joints[0],spline.ikCrv, spline.ikHandle,
+                mdhair.manCrv, mdhair.dynOutCrv, mdhair.controls[0],
                 mdhair.follicle,
                 name = '%s_ctrlGrp' % name)
-        ctrl_grp.setParent(all_ctrl)
+        ctrlGrp.setParent(attrs['parent'])
 
-        all_ctrl.outerTentacleGeo >> pm.PyNode(mesh).visibility
+        allCtrl.outerTentacleGeo >> pm.PyNode(mesh).visibility
 
-    pm.addAttr(all_ctrl, longName='outerTentacleCtrls',
+    pm.addAttr(allCtrl, longName='outerTentacleCtrls',
                attributeType='bool', defaultValue=True, keyable=True)
-    for ctrl in outerTentacle_ctrls:
-        all_ctrl.outerTentacleCtrls >> ctrl.visibility
+    for ctrl in outerTentacleCtrls:
+        allCtrl.outerTentacleCtrls >> ctrl.visibility
     
-    ctrls.extend(outerTentacle_ctrls)
-    pm.sets(outerTentacle_ctrls,name="outerTentacleCtrls")
+    ctrls.extend(outerTentacleCtrls)
+    pm.sets(outerTentacleCtrls,name="outerTentacleCtrls")
 
-def upper_bell(all_ctrl):
-    upperBell_ctrls = []
-    upperBell_joints = []
-    for dict_ in upperBell_locs:
-        loc = dict_.keys()[0]
-        attrs = dict_.values()[0]
+def upperBell(allCtrl, rootCtrl):
+    upperBellCtrls = []
+    upperBellJoints = []
 
-        name = loc.split('_')[0]
-        loc = pm.PyNode(loc)
+    upperBellJoints.append(rootCtrl.joints[0])
 
-        joint = utils.place_xform(name=name+'_%s'%defines.BIND, mtype='joint',
-                            matrix=loc.getMatrix(worldSpace=True),
-                            worldSpace=True)
-        parent = attrs['parent']
-        if parent:
-            parent = parent + '_%s' % defines.BIND
-        joint.setParent(parent)
-        ctrl = InlineOffset(joint, radius=10, ctrl_shape='circle',
-                            color=attrs['color']).controls[0]
-        upperBell_ctrls.append(ctrl)
-        upperBell_joints.append(joint)
+    #
+    lattice = Lattice(
+            geometry = [upperBellVerts, upperBellGeo[0]],
+            latticeDivisions = [5,5,5],
+            name = 'upperBellLattice',
+            parent = rootCtrl.controls[0]
+            )
+    # pm.select(upperBellVerts, upperBellGeo)
+    # lattice = pm.nt.Lattice(objectCentered=True, divisions=[5,5,5])
 
-    pm.addAttr(all_ctrl, longName='upperBellCtrls',attributeType='bool',
-               defaultValue=True, keyable=True)
-    for ctrl in upperBell_ctrls:
-        all_ctrl.upperBellCtrls >> ctrl.visibility
-    upperBell_ctrls[0].setParent(all_ctrl)
+    print lattice.lattice
+    upperBellCtrls.extend(lattice.controls)
 
-    return {'ctrls':upperBell_ctrls, 'joints':upperBell_joints}
+    return {'ctrls':upperBellCtrls, 'joints':upperBellJoints}
 
 
-def lower_bell(all_ctrl):
-    lowerBell_ctrls = []
-    lowerBell_joints = []
-    for dict_ in lowerBell_locs:
+def lowerBell(allCtrl):
+    lowerBellCtrls = []
+    lowerBellJoints = []
+    for dict_ in lowerBellLocs:
         loc = dict_.keys()[0]
         attrs = dict_.values()[0]
 
         name = loc.split('_')[0]
         loc = pm.PyNode(loc)
                 
-        parent_joint = utils.place_xform(name=name + '_%s' % defines.BIND, 
-                                         mtype='joint',
-                                         matrix=loc.getMatrix(worldSpace=True),
-                                         worldSpace=True)
+        parentJoint = utils.placeXform(name=name + '_%s' % defines.BIND, 
+                                       mtype='joint',
+                                       matrix=loc.getMatrix(worldSpace=True),
+                                       worldSpace=True)
         parent = attrs['parent']
         if parent:
             parent = parent + '_%s' % defines.BIND
-        parent_joint.setParent(parent)
-        parent_ctrl = InlineOffset(
-                parent_joint, radius=1,ctrl_shape='circle',
-                color=attrs['color']).controls[0]
-        lowerBell_ctrls.append(parent_ctrl)
-        lowerBell_joints.append(parent_joint)
-        children = loc.listRelatives(children=True,type='transform')
+        parentJoint.setParent(parent)
+        parentCtrl = InlineOffset(
+                parentJoint, controlRadius=1, controlShape='circle',
+                controlColor=attrs['color']).controls[0]
+        lowerBellCtrls.append(parentCtrl)
+        lowerBellJoints.append(parentJoint)
+        children = loc.listRelatives(children=True, type='transform')
         for endloc in children:
             endname = endloc.name().split('_')[0]
-            endjoint = utils.place_xform(
+            endjoint = utils.placeXform(
                     name=endname+'_%s'%defines.BIND,mtype='joint',
                     matrix=endloc.getMatrix(worldSpace=True),
                     worldSpace=True)
             ikjoint = pm.duplicate(
-                    parent_joint,
+                    parentJoint,
                     name=endname+'_%s'%(defines.IK+defines.JOINT.title()),
                     parentOnly=True)[0]
             ikjoint = pm.PyNode(ikjoint)
-            ikjoint.setParent(parent_joint)
+            ikjoint.setParent(parentJoint)
             endjoint.setParent(ikjoint)
-            ik = IkSC(start_joint=ikjoint, end_joint=endjoint, 
-                      name=endname, color=attrs['color'], radius=0.5)
-            lowerBell_ctrls.extend(ik.controls)
-            ik.controls[0].getParent().setParent(parent_joint)
+            ik = IkSC(startJoint=ikjoint, endJoint=endjoint, 
+                      name=endname, controlColor=attrs['color'], 
+                      controlRadius=0.5)
+            lowerBellCtrls.extend(ik.controls)
+            ik.controls[0].getParent().setParent(parentJoint)
 
-            lowerBell_joints.append(endjoint)
+            lowerBellJoints.append(endjoint)
 
-    pm.addAttr(all_ctrl, longName='lowerBellCtrls',
+    pm.addAttr(allCtrl, longName='lowerBellCtrls',
                attributeType='bool', defaultValue=True, keyable=True)
-    for ctrl in lowerBell_ctrls:
-        all_ctrl.lowerBellCtrls >> ctrl.visibility
+    for ctrl in lowerBellCtrls:
+        allCtrl.lowerBellCtrls >> ctrl.visibility
 
-    ctrls.extend(lowerBell_ctrls)
-    pm.sets(lowerBell_ctrls,name='lowerBellCtrls')
+    ctrls.extend(lowerBellCtrls)
+    pm.sets(lowerBellCtrls,name='lowerBellCtrls')
     
-    return {'ctrls':lowerBell_ctrls, 'joints':lowerBell_joints}
+    return {'ctrls':lowerBellCtrls, 'joints':lowerBellJoints}
 
-def bell(all_ctrl):
-    upper = upper_bell(all_ctrl)
-    lower = lower_bell(all_ctrl)
+def bell(allCtrl, rootCtrl):
+    upper = upperBell(allCtrl, rootCtrl)
+    lower = lowerBell(allCtrl)
     joints = [x.name() for x in upper['joints']]
 
-    skin_dict[NAMESPACE][skin.SMOOTH].update(
+    skinDict[NAMESPACE][skin.SMOOTH].update(
             {NAMESPACE + 'innerDome': joints})
 
     joints = joints + [x.name() for x in lower['joints']]
 
-    skin_dict[NAMESPACE][skin.SMOOTH].update(
+    skinDict[NAMESPACE][skin.SMOOTH].update(
             {NAMESPACE + 'headDome': joints})
 
-
-
 def build():
-    all_ctrl = blocks.Ctrl(name='all_ctrl', shape=Ctrl.CIRCLE, radius=20,
-                        normal=[0,1,0],color=Ctrl.YELLOW, group=False).ctrl
+    allCtrl = blocks.Ctrl(name='all_ctrl', shape=Ctrl.CIRCLE, radius=20,
+                          normal=[0,1,0], color=Ctrl.YELLOW, group=False).ctrl
+    rootLoc = pm.PyNode('root_loc')
+    rootJoint = utils.placeXform(name="m_root_%s" % defines.BIND, mtype='joint',
+                                  matrix=rootLoc.getMatrix(worldSpace=True),
+                                  worldSpace=True, parent=allCtrl)
+    rootCtrl = InlineOffset(
+                     rootJoint, name='m_root_%s' % defines.CTRL,
+                     controlShape=Ctrl.CIRCLE, controlRadius=15,
+                     controlColor=Ctrl.YELLOW)
 
     #
     # Inner Tentacles
     #
 
-    inner_tentacles(all_ctrl)
+    innerTentacles(allCtrl, rootCtrl)
 
-
-    #
-    # Outer Tentacles
-    #
-    outer_tentacles(all_ctrl)
-    
     #
     # LOWER BELL
     #
-    bell(all_ctrl)
+    bell(allCtrl, rootCtrl)
+    
+    #
+    # Outer Tentacles
+    #
+    outerTentacles(allCtrl)
     
     #
     # SKIN
     #
-    skin.bind(skin_dict)
+    skin.bind(skinDict)
+
+    pm.PyNode(u'upperBellLatticeBase').setParent(rootCtrl.controls[0])
+
+    upperBellDefVerts = [
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[0:421]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[426:431]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[433:434]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[436:437]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[439:442]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[444:445]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[458:461]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[474:477]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[480:481]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[483:486]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[488:489]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[491:492]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[494:496]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[498]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[511:514]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[524:526]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[528:530]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[532:535]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[537:543]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[545:547]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[549:553]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[555:559]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[561:563]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[585:595]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[620:633]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[636:638]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[640:644]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[646:650]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[652:654]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[656:660]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[662:666]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[668:669]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[694:705]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[727:750]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[760:765]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[778:801]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[814:821]'), 
+        pm.MeshVertex(u'headDomeShapeDeformed.vtx[834:841]')
+        ]
+
+    pm.reorderDeformers(u'upperBellLattice',u'skinCluster60',
+                        u'surface:model:headDome')
+    pm.reorderDeformers(u'upperBellLattice',u'skinCluster48',
+                        u'surface:model:innerDome')
+
+    pm.skinPercent('skinCluster60', upperBellDefVerts, 
+                   transformValue = [(rootJoint,1.0)])
 
     # save skin dict
-    utils.write_file('rigPirateCaptain_skin.json',skin_dict)
+    utils.writeFile('rigPirateCaptain_skin.json',skinDict)

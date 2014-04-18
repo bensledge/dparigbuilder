@@ -19,7 +19,7 @@ R_SECONDARY_AXIS= 'zdown'
 
 ##  Creates the entry for a xform node in a dict-recursively grabs children.
 #   @param node The 'root' node to start at.
-def gen_node_entry(node):
+def genNodeEntry(node):
     node = pm.PyNode(node)
     if type(node) != pm.nodetypes.Transform:
         raise TypeError, "must be xform node"
@@ -37,24 +37,24 @@ def gen_node_entry(node):
 
 ##  Build a dict of joint information keyed on joint name
 #   @param nodes A list of nodes to create dicts for
-def build_nodes_dict(nodes):
-    node_list = []
+def buildNodesDict(nodes):
+    nodeList = []
     for node in nodes:
-        node_list.append(gen_node_entry(node))
-    return node_list
+        nodeList.append(genNodeEntry(node))
+    return nodeList
 
 ##  Write data to a file
 #   Uses JSON to pickle and write a file
 #   @param path Path to write to
 #   @param data The data to write out
-def write_file(path,data):
+def writeFile(path,data):
     fn = open(path,'w')
     json.dump(data,fn,indent=JSON_INDENT)
     fn.close()
 
 ##  Returns the current selection in Maya
 #   @param mtype Type of object to return (default: 'transform')
-def get_selected(mtype='transform'):
+def getSelected(mtype='transform'):
     sel = pm.ls(selection=True,type=mtype)
     if not sel:
         raise RuntimeError, 'No %s selected.' % mtype
@@ -63,7 +63,7 @@ def get_selected(mtype='transform'):
 ##  Read in a file and return a dictionary of its contents
 #   Uses JSON to read file
 #   @param path Path to read from
-def read_file(path):
+def readFile(path):
     fn = open(path,'r')
     data = json.load(fn)
     fn.close()
@@ -94,9 +94,9 @@ def postfix(nodes=None, strpost=None, mtype='transform'):
 #
 #   @return a dict of {old node : new node}'s
 def repostfix(nodes=None, newpost=None, oldpost=None, 
-        mtype='transform',commit=True):
+              mtype='transform',commit=True):
     if nodes == None:
-        node = get_selected()
+        node = getSelected()
 
     if type(nodes) != list:
         nodes = [nodes]
@@ -129,10 +129,10 @@ def repostfix(nodes=None, newpost=None, oldpost=None,
     return renamed
 
 
-def repostfix_hierarchy(nodes=None, newpost=None, oldpost=None, 
-        mtype='transform'):
+def repostfixHierarchy(nodes=None, newpost=None, oldpost=None, 
+                       mtype='transform'):
     if nodes == None:
-        nodes = get_selected(mtype=mtype)
+        nodes = getSelected(mtype=mtype)
 
     renamed = dict()
     for node in nodes:
@@ -150,9 +150,9 @@ def repostfix_hierarchy(nodes=None, newpost=None, oldpost=None,
 #   @param mtype ('transform') type of nodes to move
 #
 #   if guide and nodes are both None, guide will be the first selected
-def snap_to(guide=None, nodes=None, mtype='transform'):
+def snapTo(guide=None, nodes=None, mtype='transform'):
     if nodes == None:
-        nodes = get_selected(mtype)
+        nodes = getSelected(mtype)
 
     if type(nodes) != list:
         nodes = [nodes]
@@ -174,7 +174,7 @@ def snap_to(guide=None, nodes=None, mtype='transform'):
 
 ##  gets the worldspace coords of a transform
 #   @param node ('None') node to get location of, if None queries selection
-def get_ws_location(node=None,mtype='transform'):
+def getWsLocation(node=None, mtype='transform'):
     if node == None:
         node = get_selected(mtype)[0]
 
@@ -184,9 +184,9 @@ def get_ws_location(node=None,mtype='transform'):
 
 ##  create pm objects for the given list of nodes
 #   @param nodes ('None') nodes to create objects for if None query selected
-def toPmNodes(nodes=None,mtype='transform'):
+def toPmNodes(nodes=None, mtype='transform'):
     if nodes == None:
-        nodes = get_selected(mtype)
+        nodes = getSelected(mtype)
 
     if type(nodes) != list:
         nodes = [nodes]
@@ -204,20 +204,23 @@ def toPmNodes(nodes=None,mtype='transform'):
 ##  standard way to orient joints in the scene
 #   @param joint joint to orient
 #   @param side ('l') side of the body the joint is on [l|r|m]
-def orient_joint(joint,side='l'):
+def orientJoint(joint,side='l'):
     if type(joint) != list:
         joint = [joint]
 
     for j in joint:
         try:
             if   side == 'l':
-                j.orientJoint(PRIMARY_AXIS, 
+                j.orientJoint(
+                        PRIMARY_AXIS, 
                         secondaryAxisOrient = L_SECONDARY_AXIS)
             elif side == 'r':
-                j.orientJoint(PRIMARY_AXIS, 
+                j.orientJoint(
+                        PRIMARY_AXIS, 
                         secondaryAxisOrient = R_SECONDARY_AXIS)
             elif side == 'm':
-                j.orientJoint(PRIMARY_AXIS, 
+                j.orientJoint(
+                        PRIMARY_AXIS, 
                         secondaryAxisOrient = M_SECONDARY_AXIS)
 
         except Exception as e:
@@ -228,7 +231,7 @@ def orient_joint(joint,side='l'):
 #   @param outnode   node that drives the other node
 #   @param innode    node that gets driven
 #   @param attr      attr to connect (string)
-def connect_attr(outnode, innode, attr):
+def connectAttr(outnode, innode, attr):
     if type(attr) != list:
         attr = [attr]
 
@@ -263,10 +266,10 @@ def make_solo_blocks(joints=None,radius=1.0,ctrl_normal=[0,1,0],mtype='transform
 
     return blocks
 """
-def get_nurbs_shapes(nodes=None,mtype='transform'):
+def getNurbsShapes(nodes=None, mtype='transform'):
     '''Returns the nurbs shapes of a transform node'''
     if nodes == None:
-        nodes = get_selected(mtype)
+        nodes = getSelected(mtype)
 
     if type(nodes) != list:
         nodes = [nodes]
@@ -275,7 +278,7 @@ def get_nurbs_shapes(nodes=None,mtype='transform'):
     for n in nodes:
         shape = False
         if type(n) == 'unicode':
-            n = to_pm_nodes(n)[0]
+            n = toPmNodes(n)[0]
         if type(n) == 'transform':
             shape = n.getShape()
         elif type(n) == 'nurbsSurface':
@@ -291,7 +294,7 @@ def distance(xforma, xformb):
     bx, by, bz = xformb.getTranslation(space='world')
     return ((ax-bx)**2 + (ay-by)**2 + (az-bz)**2)**0.5
 
-def place_joint(position,name='joint',parent=None):
+def placeJoint(position,name='joint',parent=None):
     joint = pm.joint(name=name, position=(0,0,0))
     joint.setTranslation(position, 'world')
     if parent:
@@ -299,35 +302,35 @@ def place_joint(position,name='joint',parent=None):
     joint.setParent(parent)
     return joint
 
-def place_joint_chain(start_loc, end_loc, num_joints=3, 
+def placeJointChain(startLoc, endLoc, numJoints=3, 
                       parent=None, name='jointChain'):
     joints = []
-    start_joint = place_joint(
-            get_ws_location(start_loc),
+    startJoint = placeJoint(
+            getWsLocation(startLoc),
             name = '%s%02d' % (name, 1),
             parent = parent)
-    end_joint = place_joint(
-            get_ws_location(end_loc),
-            name = '%s%02d' % (name, num_joints),
-            parent = start_joint)
-    dist = end_joint.getTranslation()
-    dist = dist / float(num_joints-1)
+    endJoint = placeJoint(
+            getWsLocation(endLoc),
+            name = '%s%02d' % (name, numJoints),
+            parent = startJoint)
+    dist = endJoint.getTranslation()
+    dist = dist / float(numJoints-1)
 
-    joints.append(start_joint)
-    for i in range(2,num_joints):
-        inside_joint = pm.insertJoint(joints[-1])
-        inside_joint = to_pm_nodes(inside_joint)[0]
-        inside_joint = pm.rename(inside_joint,
-                                 '%s%02d' % (name, i))
-        inside_joint.translateBy(dist)
-        end_joint.translateBy(-dist)
-        joints.append(inside_joint)
-    joints.append(end_joint)
+    joints.append(startJoint)
+    for i in range(2,numJoints):
+        insideJoint = pm.insertJoint(joints[-1])
+        insideJoint = toPmNodes(insideJoint)[0]
+        insideJoint = pm.rename(insideJoint,
+                                '%s%02d' % (name, i))
+        insideJoint.translateBy(dist)
+        endJoint.translateBy(-dist)
+        joints.append(insideJoint)
+    joints.append(endJoint)
 
     return joints
 
 
-def place_xform(name, mtype, matrix, parent=None, worldSpace=True):
+def placeXform(name, mtype, matrix, parent=None, worldSpace=True):
     pm.select(clear=True)
 
     if mtype == 'joint':
@@ -348,17 +351,17 @@ def place_xform(name, mtype, matrix, parent=None, worldSpace=True):
 
     return xform
 
-def place_xform_list(xform_list, worldSpace=True):
+def placeXformList(xformList, worldSpace=True):
     xforms = []
-    for xform in xform_list:
-        xf = place_xform(name=xform['name'], mtype=xform['type'],
+    for xform in xformList:
+        xf = placeXform(name=xform['name'], mtype=xform['type'],
                          matrx=xform['matrix'],parent=xform['parent'],
                          worldSpace=worldSpace)
         xforms.append(xf)
 
     return xforms
 
-def aim_normal(node, normal=[1,0,0]):
+def aimNormal(node, normal=[1,0,0]):
     loc = pm.spaceLocator(name='tmp_aimNormal_loc')
     loc.setTranslation(normal)
     pm.delete(pm.aimConstraint(loc, node, aimVector=(0,1,0)))
