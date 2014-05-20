@@ -11,7 +11,7 @@ reload(utils)
 reload(skin)
 reload(defines)
 
-NAMESPACE = 'surface:model:'
+NAMESPACE = 'model:'
 
 #
 # Save the locators to file...just in case
@@ -34,7 +34,7 @@ skinDict = {
         NAMESPACE:{
             skin.SMOOTH:{ },#SMOOTH
             skin.RIGID:{  },#RIGID
-            },#'surface:model:'
+            },#'model:'
         }#skin_dict
 
 
@@ -288,49 +288,49 @@ upperBellLocs = [
             'parent':'m_root_bind',}},
         ]
 upperBellVerts = [
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[0:421]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[426:431]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[433:434]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[436:437]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[439:442]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[444:445]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[458:461]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[474:477]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[480:481]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[483:486]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[488:489]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[491:492]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[494:496]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[498]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[511:514]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[524:526]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[528:530]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[532:535]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[537:543]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[545:547]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[549:553]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[555:559]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[561:563]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[585:595]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[620:633]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[636:638]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[640:644]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[646:650]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[652:654]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[656:660]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[662:666]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[668:669]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[694:705]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[727:750]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[760:765]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[778:801]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[814:821]'), 
-    pm.MeshVertex(u'surface:model:headDomeShape.vtx[834:841]')
+    pm.MeshVertex(u'model:headDomeShape.vtx[0:421]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[426:431]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[433:434]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[436:437]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[439:442]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[444:445]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[458:461]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[474:477]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[480:481]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[483:486]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[488:489]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[491:492]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[494:496]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[498]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[511:514]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[524:526]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[528:530]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[532:535]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[537:543]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[545:547]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[549:553]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[555:559]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[561:563]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[585:595]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[620:633]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[636:638]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[640:644]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[646:650]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[652:654]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[656:660]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[662:666]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[668:669]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[694:705]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[727:750]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[760:765]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[778:801]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[814:821]'), 
+    pm.MeshVertex(u'model:headDomeShape.vtx[834:841]')
     ]
 
 upperBellGeo = [
-    pm.nt.Transform(u'surface:model:innerDome'),
-    pm.nt.Transform(u'surface:model:headDome'),
+    pm.nt.Transform(u'model:innerDome'),
+    pm.nt.Transform(u'model:headDome'),
     ]
 
 
@@ -572,54 +572,14 @@ def build():
 
     pm.PyNode(u'upperBellLatticeBase').setParent(rootCtrl.controls[0])
 
-    upperBellDefVerts = [
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[0:421]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[426:431]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[433:434]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[436:437]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[439:442]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[444:445]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[458:461]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[474:477]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[480:481]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[483:486]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[488:489]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[491:492]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[494:496]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[498]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[511:514]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[524:526]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[528:530]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[532:535]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[537:543]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[545:547]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[549:553]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[555:559]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[561:563]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[585:595]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[620:633]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[636:638]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[640:644]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[646:650]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[652:654]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[656:660]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[662:666]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[668:669]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[694:705]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[727:750]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[760:765]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[778:801]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[814:821]'), 
-        pm.MeshVertex(u'headDomeShapeDeformed.vtx[834:841]')
-        ]
+    upperBellDefVerts = [MeshVertex(u'headDomeShapeDeformed.vtx[0:421]'), MeshVertex(u'headDomeShapeDeformed.vtx[426:431]'), MeshVertex(u'headDomeShapeDeformed.vtx[433:434]'), MeshVertex(u'headDomeShapeDeformed.vtx[436:437]'), MeshVertex(u'headDomeShapeDeformed.vtx[439:442]'), MeshVertex(u'headDomeShapeDeformed.vtx[444:445]'), MeshVertex(u'headDomeShapeDeformed.vtx[458:461]'), MeshVertex(u'headDomeShapeDeformed.vtx[474:477]'), MeshVertex(u'headDomeShapeDeformed.vtx[480:481]'), MeshVertex(u'headDomeShapeDeformed.vtx[483:486]'), MeshVertex(u'headDomeShapeDeformed.vtx[488:489]'), MeshVertex(u'headDomeShapeDeformed.vtx[491:492]'), MeshVertex(u'headDomeShapeDeformed.vtx[494:496]'), MeshVertex(u'headDomeShapeDeformed.vtx[498]'), MeshVertex(u'headDomeShapeDeformed.vtx[511:514]'), MeshVertex(u'headDomeShapeDeformed.vtx[524:526]'), MeshVertex(u'headDomeShapeDeformed.vtx[528:530]'), MeshVertex(u'headDomeShapeDeformed.vtx[532:535]'), MeshVertex(u'headDomeShapeDeformed.vtx[537:543]'), MeshVertex(u'headDomeShapeDeformed.vtx[545:547]'), MeshVertex(u'headDomeShapeDeformed.vtx[549:553]'), MeshVertex(u'headDomeShapeDeformed.vtx[555:559]'), MeshVertex(u'headDomeShapeDeformed.vtx[561:563]'), MeshVertex(u'headDomeShapeDeformed.vtx[585:595]'), MeshVertex(u'headDomeShapeDeformed.vtx[620:633]'), MeshVertex(u'headDomeShapeDeformed.vtx[636:638]'), MeshVertex(u'headDomeShapeDeformed.vtx[640:644]'), MeshVertex(u'headDomeShapeDeformed.vtx[646:650]'), MeshVertex(u'headDomeShapeDeformed.vtx[652:654]'), MeshVertex(u'headDomeShapeDeformed.vtx[656:660]'), MeshVertex(u'headDomeShapeDeformed.vtx[662:666]'), MeshVertex(u'headDomeShapeDeformed.vtx[668:669]'), MeshVertex(u'headDomeShapeDeformed.vtx[694:705]'), MeshVertex(u'headDomeShapeDeformed.vtx[727:750]'), MeshVertex(u'headDomeShapeDeformed.vtx[760:765]'), MeshVertex(u'headDomeShapeDeformed.vtx[778:801]'), MeshVertex(u'headDomeShapeDeformed.vtx[814:821]'), MeshVertex(u'headDomeShapeDeformed.vtx[834:873]'), MeshVertex(u'headDomeShapeDeformed.vtx[922:953]'), MeshVertex(u'headDomeShapeDeformed.vtx[1002:1105]'), MeshVertex(u'headDomeShapeDeformed.vtx[1154:1177]'), MeshVertex(u'headDomeShapeDeformed.vtx[1214:1296]'), MeshVertex(u'headDomeShapeDeformed.vtx[1339:1362]'), MeshVertex(u'headDomeShapeDeformed.vtx[1411:1414]'), MeshVertex(u'headDomeShapeDeformed.vtx[1417:1427]'), MeshVertex(u'headDomeShapeDeformed.vtx[1430:1441]'), MeshVertex(u'headDomeShapeDeformed.vtx[1444:1449]'), MeshVertex(u'headDomeShapeDeformed.vtx[1452:1463]'), MeshVertex(u'headDomeShapeDeformed.vtx[1466:1477]'), MeshVertex(u'headDomeShapeDeformed.vtx[1480:1485]'), MeshVertex(u'headDomeShapeDeformed.vtx[1490:1517]'), MeshVertex(u'headDomeShapeDeformed.vtx[1566:1587]'), MeshVertex(u'headDomeShapeDeformed.vtx[1630:1635]'), MeshVertex(u'headDomeShapeDeformed.vtx[1638:1649]'), MeshVertex(u'headDomeShapeDeformed.vtx[1652:1663]'), MeshVertex(u'headDomeShapeDeformed.vtx[1666:1671]'), MeshVertex(u'headDomeShapeDeformed.vtx[1674:1691]'), MeshVertex(u'headDomeShapeDeformed.vtx[1694:1701]'), MeshVertex(u'headDomeShapeDeformed.vtx[1704:1709]'), MeshVertex(u'headDomeShapeDeformed.vtx[1712:2583]'), MeshVertex(u'headDomeShapeDeformed.vtx[2632:2663]'), MeshVertex(u'headDomeShapeDeformed.vtx[2712:2823]'), MeshVertex(u'headDomeShapeDeformed.vtx[2872:2895]'), MeshVertex(u'headDomeShapeDeformed.vtx[2932:3361]')]
 
-    pm.reorderDeformers(u'upperBellLattice',u'skinCluster60',
-                        u'surface:model:headDome')
-    pm.reorderDeformers(u'upperBellLattice',u'skinCluster48',
-                        u'surface:model:innerDome')
-
-    pm.skinPercent('skinCluster60', upperBellDefVerts, 
+    pm.skinPercent('skinCluster84', upperBellDefVerts, 
                    transformValue = [(rootJoint,1.0)])
+    pm.reorderDeformers(u'upperBellLattice',u'skinCluster84',
+                        u'model:headDome')
+    pm.reorderDeformers(u'upperBellLattice',u'skinCluster48',
+                        u'model:innerDome')
 
     # save skin dict
     utils.writeFile('rigPirateCaptain_skin.json',skinDict)

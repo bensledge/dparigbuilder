@@ -155,7 +155,7 @@ class Block(object):
         raise NotImplementedError
 
 class RibbonIk(Block):
-    '''Joints equily positioned along the middle of a NURBS plane.
+    '''Joints equally positioned along the middle of a NURBS plane.
 
     Useful for tails, tentacles and spines.
     '''
@@ -246,7 +246,7 @@ class RibbonIk(Block):
         self.ribbonIkPlane.setParent(self.parent)
 
 class InlineOffset(Block):
-    '''Inserts control shapes into the scene hierarchy above the give jnts.
+    '''Inserts control shapes into the scene hierarchy above the given jnts.
     '''
 
     def __init__(self, joints, name='offset', controlShape=Ctrl.ARROWS4,
